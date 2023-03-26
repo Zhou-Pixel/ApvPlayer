@@ -16,20 +16,14 @@ public sealed class OpenGlControl : OpenGlControlBase
     // public Mpv MpvHandle { set; get; }
     private bool _first = true;
 
-    private readonly Mpv _mpv = new();
+    public Mpv? Handle { set; get; }
 
     private readonly Dictionary<string, object?> _valueCache = new();
 
     // public event Action<object, MpvPropertyChangedEventArgs>? MpvPropertyChanged; 
-    public event Action<object, MpvPropertyChangedEventArgs>? MpvPropertyChanged;
+    //public event Action<object, MpvPropertyChangedEventArgs>? MpvPropertyChanged;
     public OpenGlControl()
     {
-
-        _mpv.SetOptionString("terminal", "no");
-        _mpv.Initialize();
-        _mpv.ObserveProperty("duration", MpvFormat.MpvFormatDouble);
-        _mpv.ObserveProperty("time-pos", MpvFormat.MpvFormatDouble);
-        _mpv.SetWakeupCallback(WakeUp, nint.Zero);
 
     }
 
@@ -50,127 +44,127 @@ public sealed class OpenGlControl : OpenGlControlBase
     //     });
     // }
     //
-    [MpvProperty("pause")]
-    public bool Pause
-    {
-        set
-        {
-            _valueCache["pause"] = value;
-            _mpv.SetProperty("pause", value);
-        }
-        get => (bool)_mpv.GetProperty("pause");
-    }
+    //[MpvProperty("pause")]
+    //public bool Pause
+    //{
+    //    set
+    //    {
+    //        _valueCache["pause"] = value;
+    //        Handle.SetProperty("pause", value);
+    //    }
+    //    get => (bool)Handle.GetProperty("pause");
+    //}
 
-    [MpvProperty("ao-volume")]
-    public double Volume
-    {
-        set
-        {
-            _valueCache["ao-volume"] = value;
-            _mpv.SetProperty("ao-volume", value);
-        }
-        get => (double)_mpv.GetProperty("ao-volume");
-    }
+    //[MpvProperty("ao-volume")]
+    //public double Volume
+    //{
+    //    set
+    //    {
+    //        _valueCache["ao-volume"] = value;
+    //        Handle.SetProperty("ao-volume", value);
+    //    }
+    //    get => (double)Handle.GetProperty("ao-volume");
+    //}
 
-    [MpvProperty("duration")]
-    public double Duration => (double)_mpv.GetProperty("duration");
+    //[MpvProperty("duration")]
+    //public double Duration => (double)Handle.GetProperty("duration");
 
 
-    [MpvProperty("time-pos")]
-    public double TimePos
-    {
-        set
-        {
-            _valueCache["time-pos"] = value;
-            _mpv.SetProperty("time-pos", value);
-        }
-        get => (double)_mpv.GetProperty("time-pos");
-    }
+    //[MpvProperty("time-pos")]
+    //public double TimePos
+    //{
+    //    set
+    //    {
+    //        _valueCache["time-pos"] = value;
+    //        Handle.SetProperty("time-pos", value);
+    //    }
+    //    get => (double)Handle.GetProperty("time-pos");
+    //}
 
     public void CommandNode(params object[] cmd)
     {
-        _mpv.CommandNode(cmd);
+        Handle?.CommandNode(cmd);
     }
 
 
     public void OpenFile(string url)
     {
-        _mpv.CommandNode("loadfile", url);
+        Handle?.CommandNode("loadfile", url);
     }
 
-    private void WakeUp(nint _)
-    {
-        Task.Run(async () => //avoid block here 
-        {
-            while (true)
-            {
-                var evt = _mpv.WaitEvent(0);
-                if (evt.EventId == MpvEventId.MpvEventNone)
-                {
-                    break;
-                }
+    //private void WakeUp(nint _)
+    //{
+    //    Task.Run(async () => //avoid block here 
+    //    {
+    //        while (true)
+    //        {
+    //            var evt = Handle.WaitEvent(0);
+    //            if (evt.EventId == MpvEventId.MpvEventNone)
+    //            {
+    //                break;
+    //            }
 
-                if (evt.EventId == MpvEventId.MpvEventPropertyChange)
-                {
-                    MpvEventProperty prop = Marshal.PtrToStructure<MpvEventProperty>(evt.Data);
-                    string name = Marshal.PtrToStringAnsi(prop.Name) ?? string.Empty;
-                    var data = prop.TakeData();
-                    if (data == null)
-                    {
-                        continue;
-                    }
-                    bool sp;
-                    if (_valueCache.ContainsKey(name) && data.Equals(_valueCache[name]))
-                        sp = false;
-                    else
-                        sp = true;
-                    await Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        MpvPropertyChanged?.Invoke(this, new MpvPropertyChangedEventArgs(data, name, sp));
-                    });
-                    //if (name == "time-pos")
-                    //{
-                    //    if (prop.Data == nint.Zero)
-                    //    {
-                    //        Console.WriteLine("continuw");
-                    //        continue;
-                    //    }
-                    //    var ret = new double[1];
-                    //    Marshal.Copy(prop.Data, ret, 0, 1);
-                    //    await Dispatcher.UIThread.InvokeAsync(() =>
-                    //    {
-                    //    });
-                    //}
-                    //else if (name == "duration")
-                    //{
+    //            if (evt.EventId == MpvEventId.MpvEventPropertyChange)
+    //            {
+    //                MpvEventProperty prop = Marshal.PtrToStructure<MpvEventProperty>(evt.Data);
+    //                string name = Marshal.PtrToStringAnsi(prop.Name) ?? string.Empty;
+    //                var data = prop.TakeData();
+    //                if (data == null)
+    //                {
+    //                    continue;
+    //                }
+    //                bool sp;
+    //                if (_valueCache.ContainsKey(name) && data.Equals(_valueCache[name]))
+    //                    sp = false;
+    //                else
+    //                    sp = true;
+    //                await Dispatcher.UIThread.InvokeAsync(() =>
+    //                {
+    //                    MpvPropertyChanged?.Invoke(this, new MpvPropertyChangedEventArgs(data, name, sp));
+    //                });
+    //                //if (name == "time-pos")
+    //                //{
+    //                //    if (prop.Data == nint.Zero)
+    //                //    {
+    //                //        Console.WriteLine("continuw");
+    //                //        continue;
+    //                //    }
+    //                //    var ret = new double[1];
+    //                //    Marshal.Copy(prop.Data, ret, 0, 1);
+    //                //    await Dispatcher.UIThread.InvokeAsync(() =>
+    //                //    {
+    //                //    });
+    //                //}
+    //                //else if (name == "duration")
+    //                //{
 
-                    //    if (prop.Data == nint.Zero)
-                    //    {
-                    //        Console.WriteLine("continuw");
-                    //        continue;
-                    //    }
+    //                //    if (prop.Data == nint.Zero)
+    //                //    {
+    //                //        Console.WriteLine("continuw");
+    //                //        continue;
+    //                //    }
 
-                    //    var ret = new double[1];
-                    //    Marshal.Copy(prop.Data, ret, 0, 1);
-                    //    await Dispatcher.UIThread.InvokeAsync(() =>
-                    //    {
-                    //    });
-                    //}
-                    //else if (name == "ao-volume")
-                    //{
-                    //    var ret = new double[1];
-                    //    Marshal.Copy(prop.Data, ret, 0, 1);
-                    //    await Dispatcher.UIThread.InvokeAsync(() =>
-                    //    {
-                    //    });
-                    //}
+    //                //    var ret = new double[1];
+    //                //    Marshal.Copy(prop.Data, ret, 0, 1);
+    //                //    await Dispatcher.UIThread.InvokeAsync(() =>
+    //                //    {
+    //                //    });
+    //                //}
+    //                //else if (name == "ao-volume")
+    //                //{
+    //                //    var ret = new double[1];
+    //                //    Marshal.Copy(prop.Data, ret, 0, 1);
+    //                //    await Dispatcher.UIThread.InvokeAsync(() =>
+    //                //    {
+    //                //    });
+    //                //}
 
-                }
+    //            }
 
-            }
-        });
+    //        }
+    //    });
 
-    }
+    //}
 
     protected override void OnOpenGlRender(GlInterface gl, int fb)
     {
@@ -187,7 +181,7 @@ public sealed class OpenGlControl : OpenGlControlBase
             { MpvRenderParamType.MpvRenderParamOpenglFbo, fbo},
             { MpvRenderParamType.MpvRenderParamFlipY, 1}
         };
-        _mpv.RenderContextRender(parameters);
+        Handle?.RenderContextRender(parameters);
         // var flip = 1;
         // IntPtr fboPtr = Marshal.AllocHGlobal(Marshal.SizeOf(fbo));
         // Marshal.StructureToPtr(fbo, fboPtr, true);
@@ -248,8 +242,8 @@ public sealed class OpenGlControl : OpenGlControlBase
             {MpvRenderParamType.MpvRenderParamApiType, "opengl"},
             {MpvRenderParamType.MpvRenderParamOpenglInitParams, para},
         };
-        _mpv.RenderContextCreate(parameters);
-        _mpv.RenderContextSetUpdateCallback(UpdateGl, nint.Zero);
+        Handle.RenderContextCreate(parameters);
+        Handle.RenderContextSetUpdateCallback(UpdateGl, nint.Zero);
         // IntPtr ptrs = Marshal.StringToHGlobalAnsi("opengl");
         // IntPtr paramsPtr = Marshal.AllocHGlobal(Marshal.SizeOf(para));
         // Marshal.StructureToPtr(para, paramsPtr, true);

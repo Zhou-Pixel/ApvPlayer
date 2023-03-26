@@ -4,14 +4,19 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="using:ApvPlayer.Controls"
              xmlns:models="using:ApvPlayer.ViewModels"
+             xmlns:mpv="clr-namespace:ApvPlayer.FFI.LibMpv"
              x:DataType="models:VideoControlModel"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ApvPlayer.Controls.VideoControl">
     <Design.DataContext>
         <models:VideoControlModel />
     </Design.DataContext>
+    <UserControl.Resources>
+        <mpv:Mpv x:Key="Mpv"></mpv:Mpv>
+    </UserControl.Resources>
+
     <Grid RowDefinitions="*, Auto" ColumnDefinitions="*">
-        <local:OpenGlControl Name="GlControl" Grid.Row="0" MpvPropertyChanged="GlControl_OnMpvPropertyChanged" />
+        <local:OpenGlControl Handle="{StaticResource Mpv}" Name="GlControl" Grid.Row="0" />
         <Grid Grid.Row="1" ColumnDefinitions="Auto, Auto, *, Auto" RowDefinitions="*">
             <Grid.Styles>
                 <Style Selector="Button.Margin">

@@ -1,5 +1,6 @@
 using System;
 using ApvPlayer.EventArgs;
+using ApvPlayer.FFI.LibMpv;
 using ApvPlayer.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
@@ -19,7 +20,7 @@ public partial class VideoControl : UserControl
         InitializeComponent();
         var model = new VideoControlModel
         {
-            GlControl = this.FindControl<OpenGlControl>("GlControl")
+            Handle = this.FindResource("Mpv") as Mpv
         };
         DataContext = model;
     }

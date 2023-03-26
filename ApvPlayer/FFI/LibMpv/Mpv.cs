@@ -18,11 +18,20 @@ public class Mpv
     private readonly nint _mpvHandle = MpvFunctions.Create();
     private nint _mpvrender = nint.Zero;
     private MpvRenderContextUpdateCallback? _renderContextUpdateCallback;
-    private MpvWakeupCallback? _mpvWakeupCallback;
+    private MpvWakeupCallback _mpvWakeupCallback;
     private MpvGetProcAddressCallback? _mpvGetProcAddressCallback;
 
+    private readonly Dictionary<string, object?> _valueCache = new();
+    public event Action<object, MpvPropertyChangedEventArgs>? MpvPropertyChanged;
     public Mpv()
     {
+        _mpvWakeupCallback = WakeupCallback;
+
+        SetOptionString("terminal", "no");
+        Initialize();
+        ObserveProperty("duration", MpvFormat.MpvFormatDouble);
+        ObserveProperty("time-pos", MpvFormat.MpvFormatDouble);
+        SetWakeupCallback(_mpvWakeupCallback, nint.Zero);
     }
 
     ~Mpv()
@@ -35,6 +44,80 @@ public class Mpv
 
         MpvFunctions.TerminateDestroy(_mpvHandle);
     }
+
+    private void WakeupCallback(nint _)
+    {
+        Task.Run(async () => //avoid block here 
+        {
+            while (true)
+            {
+                var evt = WaitEvent(0);
+                if (evt.EventId == MpvEventId.MpvEventNone)
+                {
+                    break;
+                }
+
+                if (evt.EventId == MpvEventId.MpvEventPropertyChange)
+                {
+                    MpvEventProperty prop = Marshal.PtrToStructure<MpvEventProperty>(evt.Data);
+                    string name = Marshal.PtrToStringAnsi(prop.Name) ?? string.Empty;
+                    var data = prop.TakeData();
+                    if (data == null)
+                    {
+                        continue;
+                    }
+                    bool sp = true;
+                    if (_valueCache.ContainsKey(name) && data.Equals(_valueCache[name]))
+                        sp = false;
+                    else
+                        sp = true;
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        MpvPropertyChanged?.Invoke(this, new MpvPropertyChangedEventArgs(data, name, sp));
+                    });
+                    //if (name == "time-pos")
+                    //{
+                    //    if (prop.Data == nint.Zero)
+                    //    {
+                    //        Console.WriteLine("continuw");
+                    //        continue;
+                    //    }
+                    //    var ret = new double[1];
+                    //    Marshal.Copy(prop.Data, ret, 0, 1);
+                    //    await Dispatcher.UIThread.InvokeAsync(() =>
+                    //    {
+                    //    });
+                    //}
+                    //else if (name == "duration")
+                    //{
+
+                    //    if (prop.Data == nint.Zero)
+                    //    {
+                    //        Console.WriteLine("continuw");
+                    //        continue;
+                    //    }
+
+                    //    var ret = new double[1];
+                    //    Marshal.Copy(prop.Data, ret, 0, 1);
+                    //    await Dispatcher.UIThread.InvokeAsync(() =>
+                    //    {
+                    //    });
+                    //}
+                    //else if (name == "ao-volume")
+                    //{
+                    //    var ret = new double[1];
+                    //    Marshal.Copy(prop.Data, ret, 0, 1);
+                    //    await Dispatcher.UIThread.InvokeAsync(() =>
+                    //    {
+                    //    });
+                    //}
+
+                }
+
+            }
+        });
+    }
+
 
     public void Initialize()
     {
@@ -357,6 +440,7 @@ public class Mpv
         {
             throw new MpvException(code);
         }
+        _valueCache[name] = data;
     }
     private static void Free(List<nint> arg)
     {

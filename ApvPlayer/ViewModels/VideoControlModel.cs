@@ -12,8 +12,6 @@ namespace ApvPlayer.ViewModels;
 public partial class VideoControlModel : ViewModelBase
 {
 
-    public OpenGlControl? GlControl { set; private get; }
-
     public Mpv? Handle { set; private get; }
     public VideoControlModel()
     {
@@ -32,7 +30,7 @@ public partial class VideoControlModel : ViewModelBase
         {
             if (Math.Abs(_cacheTimePos - value) > 0.00001)
             {
-                GlControl!.TimePos = value;
+                Handle?.SetProperty("time-pos", value);
             }
             SetProperty(ref _videlValue, value);
         }
@@ -43,14 +41,14 @@ public partial class VideoControlModel : ViewModelBase
 
     public double VolumeValue
     {
-        set => GlControl!.Volume = value;
+        set => Handle?.SetProperty("ao-volume", value);
         get
         {
             try
             {
-                var value = GlControl!.Volume;
+                var value = (double?)Handle?.GetProperty("ao-volume");
                 Console.WriteLine($"current value {value}");
-                return value * 100;
+                return value.GetValueOrDefault() * 100;
             }
             catch (MpvException e)
             {
