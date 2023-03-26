@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:ApvPlayer.Controls"
+             xmlns:models="using:ApvPlayer.ViewModels"
+             x:DataType="models:VideoControlModel"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ApvPlayer.Controls.VideoControl">
+    <Design.DataContext>
+        <models:VideoControlModel />
+    </Design.DataContext>
+    <Grid RowDefinitions="*, Auto" ColumnDefinitions="*">
+        <local:OpenGlControl Name="GlControl" Grid.Row="0" MpvPropertyChanged="GlControl_OnMpvPropertyChanged" />
+        <Grid Grid.Row="1" ColumnDefinitions="Auto, Auto, *, Auto" RowDefinitions="*">
+            <Grid.Styles>
+                <Style Selector="Button.Margin">
+                    <Setter Property="Margin" Value="10, 0, 10, 0"></Setter>
+                </Style>
+            </Grid.Styles>
+            <Button Name="ChooseButton" Click="ChooseButton_OnClick" 
+                    Command="{Binding ChooseFile}"
+                    CommandParameter="{Binding $parent[local:VideoControl]}"
+                    Classes="Margin" Grid.Column="0" Content="选择"/>
+            <Button Name="PauseButton" Classes="Margin" Grid.Column="1" Content="播放/暂停" />
+            <Slider Name="VideoSlider" Value="{Binding VidelValue}"  TextInput="VideoSlider_OnTextInput" IsSnapToTickEnabled="True" TickFrequency="1" Grid.Column="2" Orientation="Horizontal" />
+            <Slider Name="VolumeSlider" Maximum="100" Value="{Binding VolumeValue}" IsSnapToTickEnabled="True" TickFrequency="1" Grid.Column="3" Orientation="Vertical" />
+        </Grid>
+    </Grid>
+
+
+</UserControl>

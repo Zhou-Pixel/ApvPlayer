@@ -1,0 +1,51 @@
+using System;
+using ApvPlayer.EventArgs;
+using ApvPlayer.ViewModels;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
+using DialogHostAvalonia;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+namespace ApvPlayer.Controls;
+
+public partial class VideoControl : UserControl
+{
+    public VideoControl()
+    {
+        InitializeComponent();
+        var model = new VideoControlModel
+        {
+            GlControl = this.FindControl<OpenGlControl>("GlControl")
+        };
+        DataContext = model;
+    }
+
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
+
+    private async void Button_OnClick(object? sender, RoutedEventArgs e)
+    {
+    }
+
+    private void GlControl_OnMpvPropertyChanged(object sender, MpvPropertyChangedEventArgs arg)
+    {
+
+    }
+
+    private async void ChooseButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void VideoSlider_OnTextInput(object? sender, TextInputEventArgs e)
+    {
+        Console.WriteLine("input");
+    }
+}

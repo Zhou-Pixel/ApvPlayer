@@ -1,0 +1,34 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="using:ApvPlayer.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:local="using:ApvPlayer.Controls"
+        xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+        x:Class="ApvPlayer.Views.MainWindow"
+        x:DataType="models:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="ApvPlayer"
+        Name="AppMainWindow">
+
+    <Design.DataContext>
+        <models:MainWindowViewModel />
+    </Design.DataContext>
+
+    <dialogHostAvalonia:DialogHost Identifier="Dialog"
+                                   DialogMargin="16"
+                                   dialogHostAvalonia:DialogHostStyle.CornerRadius="8"
+                                   CloseOnClickAway="True">
+        <dialogHostAvalonia:DialogHost.DataTemplates>
+            <DataTemplate DataType="models:DialogViewModel">
+				<Grid RowDefinitions="Auto, *, Auto">
+                    <TextBlock></TextBlock>
+                </Grid>
+            </DataTemplate>
+        </dialogHostAvalonia:DialogHost.DataTemplates>
+        <local:VideoControl />
+    </dialogHostAvalonia:DialogHost>
+
+</Window>
+
