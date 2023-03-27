@@ -155,7 +155,8 @@ public struct MpvNode
             }
             case MpvFormat.MpvFormatString:
             {
-                ret = Marshal.PtrToStringAnsi(Data.CString);
+                //ret = Marshal.PtrToStringAnsi(Data.CString);
+                ret = Data.CString;
                 break;
             }
             case MpvFormat.MpvFormatFlag:

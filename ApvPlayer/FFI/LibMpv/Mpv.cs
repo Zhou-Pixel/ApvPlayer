@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using ApvPlayer.Attributes;
 using ApvPlayer.Errors;
@@ -156,51 +157,88 @@ public class Mpv
 
     public void CommandNode(List<string> cmd)
     {
-        var node = new MpvNode
+        nint[] argPtr = new nint[cmd.Count + 1];
+
+        int i = 0;
+        foreach (var item in cmd)
         {
-            Format = MpvFormat.MpvFormatNodeArray
-        };
-
-
-        var list = new MpvNodeList
-        {
-            Num = cmd.Count
-        };
-
-
-        var toBeFree = new List<nint>();
-        var nodeList = new MpvNode[list.Num];
-        for (int i = 0; i < nodeList.Length; i++)
-        {
-            nodeList[i].Format = MpvFormat.MpvFormatString;
-            var ptr = Marshal.StringToHGlobalAnsi(cmd[i]);
-            nodeList[i].Data.CString = ptr;
-            toBeFree.Add(ptr);
+            argPtr[i] = Marshal.StringToHGlobalAnsi(item + "\0");
+            i++;
         }
-        list.NodeValues = Marshal.UnsafeAddrOfPinnedArrayElement(nodeList, 0);
 
-        nint listPtr = Marshal.AllocHGlobal(Marshal.SizeOf(list));
-        Marshal.StructureToPtr(list, listPtr, true);
-        node.Data.NodeList = listPtr;
-        toBeFree.Add(listPtr);
+        int code = MpvFunctions.Command(_mpvHandle, Marshal.UnsafeAddrOfPinnedArrayElement(argPtr, 0));
 
-        var nodePtr = Marshal.AllocHGlobal(Marshal.SizeOf(node));
-        Marshal.StructureToPtr(node, nodePtr, true);
-        toBeFree.Add(nodePtr);
-
-        MpvNode res = new MpvNode();
-        var resPtr = Marshal.AllocHGlobal(Marshal.SizeOf(res));
-        Marshal.StructureToPtr(res, resPtr, true);
-        toBeFree.Add(resPtr);
-        
-        int code = MpvFunctions.CommandNode(_mpvHandle, nodePtr, resPtr);
-
-        Free(toBeFree);
-        
+        foreach (var item in argPtr)
+        {
+            Marshal.FreeHGlobal(item);
+        }
         if (code != 0)
         {
             throw new MpvException(code);
         }
+
+
+
+
+        //int count = cmd.Count + 1;
+        //IntPtr[] pointers = new IntPtr[count];
+        //IntPtr rootPtr = Marshal.AllocHGlobal(IntPtr.Size * count);
+
+        //for (int index = 0; index < cmd.Count; index++)
+        //{
+        //    var bytes = Encoding.UTF8.GetBytes(cmd[index] + "\0");
+        //    IntPtr ptr = Marshal.AllocHGlobal(bytes.Length);
+        //    Marshal.Copy(bytes, 0, ptr, bytes.Length);
+        //    pointers[index] = ptr;
+        //}
+
+        //Marshal.Copy(pointers, 0, rootPtr, count);
+        //MpvFunctions.Command(_mpvHandle, rootPtr);
+        //var node = new MpvNode
+        //{
+        //    Format = MpvFormat.MpvFormatNodeArray
+        //};
+
+
+        //var list = new MpvNodeList
+        //{
+        //    Num = cmd.Count
+        //};
+
+
+        //var toBeFree = new List<nint>();
+        //var nodeList = new MpvNode[list.Num];
+        //for (int i = 0; i < nodeList.Length; i++)
+        //{
+        //    nodeList[i].Format = MpvFormat.MpvFormatString;
+        //    var ptr = Marshal.StringToHGlobalAnsi(cmd[i]);
+        //    nodeList[i].Data.CString = ptr;
+        //    toBeFree.Add(ptr);
+        //}
+        //list.NodeValues = Marshal.UnsafeAddrOfPinnedArrayElement(nodeList, 0);
+
+        //nint listPtr = Marshal.AllocHGlobal(Marshal.SizeOf(list));
+        //Marshal.StructureToPtr(list, listPtr, true);
+        //node.Data.NodeList = listPtr;
+        //toBeFree.Add(listPtr);
+
+        //var nodePtr = Marshal.AllocHGlobal(Marshal.SizeOf(node));
+        //Marshal.StructureToPtr(node, nodePtr, true);
+        //toBeFree.Add(nodePtr);
+
+        //MpvNode res = new MpvNode();
+        //var resPtr = Marshal.AllocHGlobal(Marshal.SizeOf(res));
+        //Marshal.StructureToPtr(res, resPtr, true);
+        //toBeFree.Add(resPtr);
+
+        //int code = MpvFunctions.CommandNode(_mpvHandle, nodePtr, resPtr);
+
+        //Free(toBeFree);
+
+        //if (code != 0)
+        //{
+        //    throw new MpvException(code);
+        //}
     }
 
 
@@ -212,7 +250,16 @@ public class Mpv
 
         var outPtr = Marshal.AllocHGlobal(Marshal.SizeOf<MpvNode>());
         int code = MpvFunctions.CommandNode(_mpvHandle, nodePtr, outPtr);
-        
+        var outNode = Marshal.PtrToStructure<MpvNode>(outPtr);
+        if (outNode.Format == MpvFormat.MpvFormatNodeMap)
+        {
+            
+            var list = Marshal.PtrToStructure<MpvNodeList>(outNode.Data.NodeList);
+            var value = Marshal.PtrToStructure<MpvNode>(list.NodeValues);
+            //var valuePtr = Marshal.ReadIntPtr(list.Key);
+            //var str = Marshal.PtrToStringAnsi(valuePtr);
+            //var value = Marshal.PtrToStructure<MpvNode>(valuePtr);
+        }
         node.Free();
         
         Marshal.FreeHGlobal(nodePtr);

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ApvPlayer.Controls;
 using ApvPlayer.Errors;
 using ApvPlayer.EventArgs;
@@ -57,7 +58,6 @@ public partial class VideoControlModel : ViewModelBase
             try
             {
                 var value = (double?)_handle?.GetProperty("ao-volume");
-                Console.WriteLine($"current value {value}");
                 return value.GetValueOrDefault() * 100;
             }
             catch (MpvException e)
@@ -66,6 +66,12 @@ public partial class VideoControlModel : ViewModelBase
                 return 0;
             }
         }
+    }
+
+    public bool Pause
+    {
+        set => _handle?.SetProperty("pause", value);
+        get => (bool)(_handle?.GetProperty("pause") ?? false);
     }
 
     public async void ChooseFile(object para)
@@ -87,26 +93,31 @@ public partial class VideoControlModel : ViewModelBase
 
         });
         if (ret.Count == 0) return;
+
         var gl = control.FindControl<OpenGlControl>("GlControl");
-        gl?.OpenFile(Uri.UnescapeDataString(ret[0].Path.AbsolutePath));
+        var st = Uri.UnescapeDataString(ret[0].Path.AbsolutePath);
+        _handle?.CommandNode(new List<string>()
+        {
+            "loadfile",
+            st
+        });
+        //_handle?.CommandNode("loadfile", st);
+        //gl?.OpenFile(st);
     }
 
 
     public void MpvPropertyChanged(object sender, MpvPropertyChangedEventArgs arg)
     {
-        Console.WriteLine($"property change {arg.MpvPropertyName} {arg.NewValue}");
-        if (arg.Spontaneous)
+        if (!arg.Spontaneous) return;
+        switch (arg.MpvPropertyName)
         {
-            if (arg.MpvPropertyName == "duration")
-            {
+            case "duration":
                 VideoDuration = (double)arg.NewValue;
-            }
-            else if (arg.MpvPropertyName == "time-pos")
-            {
+                break;
+            case "time-pos":
                 _cacheTimePos = (double)arg.NewValue;
                 VidelValue = _cacheTimePos;
-            }
-
+                break;
         }
     }
 
@@ -143,6 +154,10 @@ public partial class VideoControlModel : ViewModelBase
         _handle?.ObserveProperty(name, format);
     }
 
+    public void SwitchState()
+    {
+        Pause = !Pause;
+    }
 
     //private void RaiseMpvPropertyChanged(string mpvPropertyName)
     //{

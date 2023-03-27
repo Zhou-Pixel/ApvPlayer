@@ -49,6 +49,7 @@ public class MpvFunctions
         RenderContextSetUpdateCallback = GetDelegate<MpvRenderContextSetUpdateCallback>("mpv_render_context_set_update_callback");
         RenderContextRender = GetDelegate<MpvRenderContextRender>("mpv_render_context_render");
         CommandNode = GetDelegate<MpvCommandNode>("mpv_command_node");
+        Command = GetDelegate<MpvCommand>("mpv_command");
         ErrorString = GetDelegate<MpvErrorString>("mpv_error_string");
         RenderContextFree = GetDelegate<MpvRenderContextFree>("mpv_render_context_free");
         TerminateDestroy = GetDelegate<MpvTerminateDestroy>("mpv_terminate_destroy");
@@ -94,6 +95,8 @@ public class MpvFunctions
 
     // int mpv_command_node(mpv_handle *ctx, mpv_node *args, mpv_node *result);
     public MpvCommandNode CommandNode { get; }
+
+    public MpvCommand Command { get; }
     
     //const char *mpv_error_string(int error);
     public MpvErrorString ErrorString { get; }

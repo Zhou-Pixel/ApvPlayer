@@ -74,3 +74,6 @@ public delegate void MpvFreeNodeContents(nint node);
 // int mpv_set_property(mpv_handle *ctx, const char *name, mpv_format format, void *data);
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 public delegate int MpvSetProperty(nint ctx, nint name, MpvFormat format, nint data);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate int MpvCommand(nint ctx, nint arg);
