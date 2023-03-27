@@ -56,8 +56,7 @@ public class Mpv
                 {
                     break;
                 }
-
-                if (evt.EventId == MpvEventId.MpvEventPropertyChange)
+                else if (evt.EventId == MpvEventId.MpvEventPropertyChange)
                 {
                     MpvEventProperty prop = Marshal.PtrToStructure<MpvEventProperty>(evt.Data);
                     string name = Marshal.PtrToStringAnsi(prop.Name) ?? string.Empty;
@@ -113,7 +112,10 @@ public class Mpv
                     //}
 
                 }
-
+                else
+                {
+                    Console.WriteLine(evt.EventId);
+                }
             }
         });
     }
@@ -149,7 +151,7 @@ public class Mpv
     public void SetWakeupCallback(MpvWakeupCallback cb, nint data)
     {
         _mpvWakeupCallback = cb;
-        MpvFunctions.SetWakeupCallback(_mpvHandle, Marshal.GetFunctionPointerForDelegate(_mpvWakeupCallback), data);
+        MpvFunctions.SetWakeupCallback(_mpvHandle, _mpvWakeupCallback, data);
     }
 
     public void CommandNode(List<string> cmd)
@@ -314,7 +316,8 @@ public class Mpv
     public void RenderContextSetUpdateCallback(MpvRenderContextUpdateCallback callback, nint data)
     {
         _renderContextUpdateCallback = callback;
-        MpvFunctions.RenderContextSetUpdateCallback(_mpvrender, Marshal.GetFunctionPointerForDelegate(_renderContextUpdateCallback), data);
+        // MpvFunctions.RenderContextSetUpdateCallback(_mpvrender, Marshal.GetFunctionPointerForDelegate(_renderContextUpdateCallback), data);
+        MpvFunctions.RenderContextSetUpdateCallback(_mpvrender, _renderContextUpdateCallback, data);
     }
 
     public void RenderContextRender(Dictionary<MpvRenderParamType, object> parameters)

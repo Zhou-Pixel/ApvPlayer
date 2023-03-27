@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
 using ApvPlayer.FFI.LibraryLoaders;
-using LibMpv.LibraryLoaders;
 
 namespace ApvPlayer.FFI.LibMpv;
 
@@ -59,6 +58,10 @@ public class MpvFunctions
         SetProperty = GetDelegate<MpvSetProperty>("mpv_set_property");
     }
 
+    ~MpvFunctions()
+    {
+        _libraryLoader.Dispose();
+    }
 
     private TDelegate GetDelegate<TDelegate>(string path)
     {

@@ -24,7 +24,10 @@ public sealed class OpenGlControl : OpenGlControlBase
     //public event Action<object, MpvPropertyChangedEventArgs>? MpvPropertyChanged;
     public OpenGlControl()
     {
-
+        PointerPressed += (sender, args) =>
+        {
+            Console.WriteLine("openglcontrol press");
+        };
     }
 
     private void OpenGlControl_PointerPressed(object? sender, object e)
@@ -242,8 +245,11 @@ public sealed class OpenGlControl : OpenGlControlBase
             {MpvRenderParamType.MpvRenderParamApiType, "opengl"},
             {MpvRenderParamType.MpvRenderParamOpenglInitParams, para},
         };
-        Handle.RenderContextCreate(parameters);
-        Handle.RenderContextSetUpdateCallback(UpdateGl, nint.Zero);
+        Console.WriteLine("render create");
+        Handle?.RenderContextCreate(parameters);
+        Console.WriteLine("set update start");
+        Handle?.RenderContextSetUpdateCallback(UpdateGl, nint.Zero);
+        Console.WriteLine("set update end");
         // IntPtr ptrs = Marshal.StringToHGlobalAnsi("opengl");
         // IntPtr paramsPtr = Marshal.AllocHGlobal(Marshal.SizeOf(para));
         // Marshal.StructureToPtr(para, paramsPtr, true);

@@ -1,8 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
-using ApvPlayer.FFI.LibraryLoaders;
 
-namespace LibMpv.LibraryLoaders;
+namespace ApvPlayer.FFI.LibraryLoaders;
 
 public class LinuxLibraryLoader : ILibraryLoader
 {
@@ -12,34 +11,34 @@ public class LinuxLibraryLoader : ILibraryLoader
     private const int RtldLocal = 0x4;
     private const int RtldGlobal =	0x8;
     [DllImport("dl", EntryPoint = "dlopen")]
-    private static extern IntPtr Dlopen( string pathname, int mode);
+    private static extern nint Dlopen( string pathname, int mode);
     
     [DllImport("dl", EntryPoint = "dlsym")]
-    private static extern IntPtr Dlsym(IntPtr handle,string symbol);
+    private static extern nint Dlsym(nint handle,string symbol);
     
     [DllImport("dl", EntryPoint = "dlclose")]
-    private static extern int Dlclose (IntPtr handle);
+    private static extern int Dlclose (nint handle);
 
-    private IntPtr _libraryHandler = IntPtr.Zero;
+    private nint _libraryHandler = nint.Zero;
     private bool _disposed = false;
 
     public void Dispose()
     {
-        if (_disposed != false || _libraryHandler == IntPtr.Zero) return;
+        if (_disposed != false || _libraryHandler == nint.Zero) return;
         Dlclose(_libraryHandler);
-        _libraryHandler = IntPtr.Zero;
+        _libraryHandler = nint.Zero;
         _disposed = true;
     }
 
     public bool LoadDynamicLibrary(string path)
     {
         _libraryHandler = Dlopen(path, RtldLazy);
-        return _libraryHandler != IntPtr.Zero;
+        return _libraryHandler != nint.Zero;
     }
 
-    public IntPtr GetProcAddress(string symbol)
+    public nint GetProcAddress(string symbol)
     {
-        if (_libraryHandler == IntPtr.Zero)
+        if (_libraryHandler == nint.Zero)
         {
             throw new InvalidOperationException("Dynamic library is not loaded or failed to load");
         }

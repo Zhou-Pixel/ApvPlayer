@@ -16,7 +16,7 @@ public delegate int MpvSetOptionString(nint ctx, nint name, nint data);
 
 // void mpv_set_wakeup_callback(mpv_handle *ctx, void (*cb)(void *d), void *d);
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void MpvSetWakeupCallback(nint ctx, nint cb, nint data);
+public delegate void MpvSetWakeupCallback(nint ctx, [MarshalAs(UnmanagedType.FunctionPtr)] MpvWakeupCallback cb, nint data);
 
 // mpv_event *mpv_wait_event(mpv_handle *ctx, double timeout);
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -30,7 +30,7 @@ public delegate int MpvRenderContextCreate(nint outCtx, nint mpv, nint paras);
 // void mpv_render_context_set_update_callback(mpv_render_context *ctx, mpv_render_update_fn callback, void *callback_ctx);
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 public delegate void MpvRenderContextSetUpdateCallback(nint renderPtrctx,
-	nint cb,
+	[MarshalAs(UnmanagedType.FunctionPtr)] MpvRenderContextUpdateCallback cb,
 	nint data);
 
 // int mpv_render_context_render(mpv_render_context *ctx, mpv_render_param *params);

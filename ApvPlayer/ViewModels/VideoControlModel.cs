@@ -12,7 +12,17 @@ namespace ApvPlayer.ViewModels;
 public partial class VideoControlModel : ViewModelBase
 {
 
-    public Mpv? Handle { set; private get; }
+    private Mpv? _handle;
+
+    public Mpv Handle
+    {
+        set
+        {
+            value.MpvPropertyChanged += MpvPropertyChanged;
+            _handle = value;
+        }
+    }
+
     public VideoControlModel()
     {
     }
@@ -30,7 +40,7 @@ public partial class VideoControlModel : ViewModelBase
         {
             if (Math.Abs(_cacheTimePos - value) > 0.00001)
             {
-                Handle?.SetProperty("time-pos", value);
+                _handle?.SetProperty("time-pos", value);
             }
             SetProperty(ref _videlValue, value);
         }
@@ -41,12 +51,12 @@ public partial class VideoControlModel : ViewModelBase
 
     public double VolumeValue
     {
-        set => Handle?.SetProperty("ao-volume", value);
+        set => _handle?.SetProperty("ao-volume", value);
         get
         {
             try
             {
-                var value = (double?)Handle?.GetProperty("ao-volume");
+                var value = (double?)_handle?.GetProperty("ao-volume");
                 Console.WriteLine($"current value {value}");
                 return value.GetValueOrDefault() * 100;
             }
@@ -65,10 +75,10 @@ public partial class VideoControlModel : ViewModelBase
         if (window == null) return;
         var ret = await window.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
         {
-            Title = "Ñ¡ÔñÊÓÆµ",
+            Title = "é€‰æ‹©è§†é¢‘",
             FileTypeFilter = new[]
             {
-                new FilePickerFileType("ÊÓÆµ")
+                new FilePickerFileType("è§†é¢‘")
                 {
                     Patterns = new []{"*.mp4", "*.mkv", "*.flv"}
                 }
@@ -78,21 +88,24 @@ public partial class VideoControlModel : ViewModelBase
         });
         if (ret.Count == 0) return;
         var gl = control.FindControl<OpenGlControl>("GlControl");
-        gl?.OpenFile(ret[0].Path.AbsolutePath);
+        gl?.OpenFile(Uri.UnescapeDataString(ret[0].Path.AbsolutePath));
     }
 
 
     public void MpvPropertyChanged(object sender, MpvPropertyChangedEventArgs arg)
     {
+        Console.WriteLine($"property change {arg.MpvPropertyName} {arg.NewValue}");
         if (arg.Spontaneous)
         {
             if (arg.MpvPropertyName == "duration")
             {
-                _cacheTimePos = (double)arg.NewValue;
-                VideoDuration = _cacheTimePos;
+                VideoDuration = (double)arg.NewValue;
             }
             else if (arg.MpvPropertyName == "time-pos")
-                VidelValue = (double)arg.NewValue;
+            {
+                _cacheTimePos = (double)arg.NewValue;
+                VidelValue = _cacheTimePos;
+            }
 
         }
     }
@@ -127,7 +140,7 @@ public partial class VideoControlModel : ViewModelBase
         {
             throw new NotImplementedException();
         }
-        Handle?.ObserveProperty(name, format);
+        _handle?.ObserveProperty(name, format);
     }
 
 

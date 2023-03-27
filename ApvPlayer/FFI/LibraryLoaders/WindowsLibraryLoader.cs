@@ -1,8 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
-using ApvPlayer.FFI.LibraryLoaders;
 
-namespace LibMpv.LibraryLoaders;
+namespace ApvPlayer.FFI.LibraryLoaders;
 
 public class WindowsLibraryLoader : ILibraryLoader
 {

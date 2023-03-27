@@ -7,7 +7,7 @@
              xmlns:mpv="clr-namespace:ApvPlayer.FFI.LibMpv"
              x:DataType="models:VideoControlModel"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ApvPlayer.Controls.VideoControl">
+             x:Class="ApvPlayer.Controls.VideoControl" PointerPressed="InputElement_OnPointerPressed">
     <Design.DataContext>
         <models:VideoControlModel />
     </Design.DataContext>
@@ -28,7 +28,7 @@
                     CommandParameter="{Binding $parent[local:VideoControl]}"
                     Classes="Margin" Grid.Column="0" Content="选择"/>
             <Button Name="PauseButton" Classes="Margin" Grid.Column="1" Content="播放/暂停" />
-            <Slider Name="VideoSlider" Value="{Binding VidelValue}"  TextInput="VideoSlider_OnTextInput" IsSnapToTickEnabled="True" TickFrequency="1" Grid.Column="2" Orientation="Horizontal" />
+            <Slider Name="VideoSlider" Maximum="{Binding VideoDuration}" Value="{Binding VidelValue}"  TextInput="VideoSlider_OnTextInput" IsSnapToTickEnabled="True" TickFrequency="1" Grid.Column="2" Orientation="Horizontal" />
             <Slider Name="VolumeSlider" Maximum="100" Value="{Binding VolumeValue}" IsSnapToTickEnabled="True" TickFrequency="1" Grid.Column="3" Orientation="Vertical" />
         </Grid>
     </Grid>
