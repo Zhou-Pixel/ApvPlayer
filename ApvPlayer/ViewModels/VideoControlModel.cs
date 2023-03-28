@@ -6,7 +6,7 @@ using ApvPlayer.EventArgs;
 using ApvPlayer.FFI.LibMpv;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
-using CommunityToolkit.Mvvm.ComponentModel;
+using ReactiveUI;
 
 namespace ApvPlayer.ViewModels;
 
@@ -21,6 +21,7 @@ public partial class VideoControlModel : ViewModelBase
         {
             value.MpvPropertyChanged += MpvPropertyChanged;
             _handle = value;
+            _handle.ObserveProperty("idle-active", MpvFormat.MpvFormatFlag);
         }
     }
 
@@ -29,8 +30,7 @@ public partial class VideoControlModel : ViewModelBase
     }
 
 
-    [ObservableProperty]
-    private double _videoDuration = 100;
+    public double VideoDuration { set; get; } = 100;
 
 
     private double _cacheTimePos;
@@ -39,11 +39,12 @@ public partial class VideoControlModel : ViewModelBase
     {
         set
         {
-            if (Math.Abs(_cacheTimePos - value) > 0.00001)
+            if (Math.Abs(_cacheTimePos - value) > 0.00001 && Active)
             {
                 _handle?.SetProperty("time-pos", value);
             }
-            SetProperty(ref _videlValue, value);
+            _videlValue = value;
+            this.RaisePropertyChanged();
         }
         get => _videlValue;
     }
@@ -71,8 +72,12 @@ public partial class VideoControlModel : ViewModelBase
     public bool Pause
     {
         set => _handle?.SetProperty("pause", value);
-        get => (bool)(_handle?.GetProperty("pause") ?? false);
+        get => (bool)_handle!.GetProperty("pause");
     }
+
+    
+
+    public bool Active => !(bool)_handle!.GetProperty("idle-active");
 
     public async void ChooseFile(object para)
     {

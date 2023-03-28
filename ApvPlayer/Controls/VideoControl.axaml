@@ -28,8 +28,8 @@
                     CommandParameter="{Binding $parent[local:VideoControl]}"
                     Classes="Margin" Grid.Column="0" Content="选择"/>
             <Button Command="{Binding SwitchState}" Classes="Margin" Grid.Column="1" Content="播放/暂停" />
-            <Slider Name="VideoSlider" Maximum="{Binding VideoDuration}" Value="{Binding VidelValue}"  TextInput="VideoSlider_OnTextInput" IsSnapToTickEnabled="True" TickFrequency="1" Grid.Column="2" Orientation="Horizontal" />
-            <Slider Name="VolumeSlider" Maximum="100" Value="{Binding VolumeValue}" IsSnapToTickEnabled="True" TickFrequency="1" Grid.Column="3" Orientation="Vertical" />
+            <Slider IsEnabled="{Binding Active}" Name="VideoSlider" Maximum="{Binding VideoDuration}" Value="{Binding VidelValue}"  TextInput="VideoSlider_OnTextInput" IsSnapToTickEnabled="True" TickFrequency="1" Grid.Column="2" Orientation="Horizontal" />
+            <Slider IsEnabled="{Binding Active}" Margin="0, 10, 0, 10" Name="VolumeSlider" Maximum="100" Value="{Binding VolumeValue}" IsSnapToTickEnabled="True" TickFrequency="1" Grid.Column="3" Orientation="Vertical" />
         </Grid>
     </Grid>
 

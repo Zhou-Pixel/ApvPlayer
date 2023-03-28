@@ -2,6 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 using ApvPlayer.FFI.LibMpv;
+using Avalonia.ReactiveUI;
 
 
 namespace ApvPlayer;
@@ -23,7 +24,7 @@ class Program
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
-            .LogToTrace();
+            .LogToTrace().UseReactiveUI();
 
     private static void MpvSetUp()
     {
