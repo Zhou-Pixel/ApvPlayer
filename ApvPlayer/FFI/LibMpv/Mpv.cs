@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
-using ApvPlayer.Attributes;
 using ApvPlayer.Errors;
 using ApvPlayer.EventArgs;
 using Avalonia.Threading;
@@ -15,7 +12,6 @@ namespace ApvPlayer.FFI.LibMpv;
 public class Mpv
 {
     private static readonly MpvFunctions MpvFunctions = MpvFunctions.Instance;
-
     private readonly nint _mpvHandle = MpvFunctions.Create();
     private nint _mpvrender = nint.Zero;
     private MpvRenderContextUpdateCallback? _renderContextUpdateCallback;
@@ -499,6 +495,8 @@ public class Mpv
             Marshal.FreeHGlobal(item);
         }
     }
+
+
 }
     
 

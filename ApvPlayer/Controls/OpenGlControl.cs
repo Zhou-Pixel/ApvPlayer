@@ -7,16 +7,35 @@ using ApvPlayer.EventArgs;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
 using ApvPlayer.FFI.LibMpv;
+using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Threading;
 
 namespace ApvPlayer.Controls;
 
 public sealed class OpenGlControl : OpenGlControlBase
 {
+    public static readonly StyledProperty<Mpv?> MpvProperty =
+        AvaloniaProperty.Register<ContentControl, Mpv?>(nameof(Handle));
+    
+    // public static readonly AvaloniaProperty<string> MpvProperty =
+    //     AvaloniaProperty.Register<OpenGlControl, string>(nameof(Handle));
+    
+    public static readonly StyledProperty<object?> TestProperty =
+        AvaloniaProperty.Register<ContentControl, object?>(nameof(Test));
     // public Mpv MpvHandle { set; get; }
     private bool _first = true;
 
-    public Mpv? Handle { set; get; }
+    public object? Test
+    {
+        set => SetValue(TestProperty, value);
+        get => GetValue(TestProperty);
+    }
+    public Mpv? Handle
+    {
+        set => SetValue(MpvProperty, value);
+        get => GetValue(MpvProperty);
+    }
 
     private readonly Dictionary<string, object?> _valueCache = new();
 

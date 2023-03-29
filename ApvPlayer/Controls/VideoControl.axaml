@@ -11,12 +11,12 @@
     <Design.DataContext>
         <models:VideoControlModel />
     </Design.DataContext>
-    <UserControl.Resources>
-        <mpv:Mpv x:Key="Mpv"></mpv:Mpv>
-    </UserControl.Resources>
+    <!-- <UserControl.Resources> -->
+    <!--     <mpv:Mpv x:Key="Mpv"></mpv:Mpv> -->
+    <!-- </UserControl.Resources> -->
 
     <Grid RowDefinitions="*, Auto" ColumnDefinitions="*">
-        <local:OpenGlControl Handle="{StaticResource Mpv}" Name="GlControl" Grid.Row="0" />
+        <local:OpenGlControl Handle="{Binding  Handle, Mode=OneTime}" Test="{Binding Handle}" Name="GlControl" Grid.Row="0" />
         <Grid Grid.Row="1" ColumnDefinitions="Auto, Auto, *, Auto" RowDefinitions="*">
             <Grid.Styles>
                 <Style Selector="Button.Margin">

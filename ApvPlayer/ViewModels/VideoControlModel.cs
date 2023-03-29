@@ -13,17 +13,19 @@ namespace ApvPlayer.ViewModels;
 public partial class VideoControlModel : ViewModelBase
 {
 
-    private Mpv? _handle;
+    // private Mpv? _handle;
+    //
+    // public Mpv Handle
+    // {
+    //     set
+    //     {
+    //         value.MpvPropertyChanged += MpvPropertyChanged;
+    //         _handle = value;
+    //         _handle.ObserveProperty("idle-active", MpvFormat.MpvFormatFlag);
+    //     }
+    // }
 
-    public Mpv Handle
-    {
-        set
-        {
-            value.MpvPropertyChanged += MpvPropertyChanged;
-            _handle = value;
-            _handle.ObserveProperty("idle-active", MpvFormat.MpvFormatFlag);
-        }
-    }
+    public Mpv Handle => new Mpv();
 
     public VideoControlModel()
     {
@@ -41,7 +43,7 @@ public partial class VideoControlModel : ViewModelBase
         {
             if (Math.Abs(_cacheTimePos - value) > 0.00001 && Active)
             {
-                _handle?.SetProperty("time-pos", value);
+                Handle.SetProperty("time-pos", value);
             }
             _videlValue = value;
             this.RaisePropertyChanged();
@@ -53,13 +55,13 @@ public partial class VideoControlModel : ViewModelBase
 
     public double VolumeValue
     {
-        set => _handle?.SetProperty("ao-volume", value);
+        set => Handle.SetProperty("ao-volume", value);
         get
         {
             try
             {
-                var value = (double?)_handle?.GetProperty("ao-volume");
-                return value.GetValueOrDefault() * 100;
+                var value = (double)Handle.GetProperty("ao-volume");
+                return value * 100;
             }
             catch (MpvException e)
             {
@@ -71,13 +73,13 @@ public partial class VideoControlModel : ViewModelBase
 
     public bool Pause
     {
-        set => _handle?.SetProperty("pause", value);
-        get => (bool)_handle!.GetProperty("pause");
+        set => Handle.SetProperty("pause", value);
+        get => (bool)Handle.GetProperty("pause");
     }
 
     
 
-    public bool Active => !(bool)_handle!.GetProperty("idle-active");
+    public bool Active => !(bool)Handle.GetProperty("idle-active");
 
     public async void ChooseFile(object para)
     {
@@ -101,7 +103,7 @@ public partial class VideoControlModel : ViewModelBase
 
         var gl = control.FindControl<OpenGlControl>("GlControl");
         var st = Uri.UnescapeDataString(ret[0].Path.AbsolutePath);
-        _handle?.CommandNode(new List<string>()
+        Handle.CommandNode(new List<string>()
         {
             "loadfile",
             st
@@ -156,7 +158,7 @@ public partial class VideoControlModel : ViewModelBase
         {
             throw new NotImplementedException();
         }
-        _handle?.ObserveProperty(name, format);
+        Handle.ObserveProperty(name, format);
     }
 
     public void SwitchState()

@@ -15,10 +15,10 @@ public partial class VideoControl : UserControl
     public VideoControl()
     {
         InitializeComponent();
-        var model = new VideoControlModel
-        {
-            Handle = (Mpv)this.FindResource("Mpv")!
-        };
+        var model = new VideoControlModel();
+        // {
+        //     Handle = (Mpv)this.FindResource("Mpv")!
+        // };
         DataContext = model;
     }
 
