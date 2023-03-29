@@ -6,6 +6,7 @@ using ApvPlayer.EventArgs;
 using ApvPlayer.FFI.LibMpv;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using Avalonia.Win32.DirectX;
 using ReactiveUI;
 
 namespace ApvPlayer.ViewModels;
@@ -25,14 +26,28 @@ public partial class VideoControlModel : ViewModelBase
     //     }
     // }
 
-    public Mpv Handle => new Mpv();
+    public Mpv Handle { get; } = new();
 
     public VideoControlModel()
     {
+        
+        _active = !(bool)Handle.GetProperty("idle-active");
+        Handle.ObserveProperty("idle-active", MpvFormat.MpvFormatFlag);
+        Handle.MpvPropertyChanged += MpvPropertyChanged;
     }
 
 
-    public double VideoDuration { set; get; } = 100;
+    private double _videoDuration = 100;
+
+    public double VideoDuration
+    {
+        set
+        {
+            _videoDuration = value;
+            this.RaisePropertyChanged();
+        }
+        get => _videoDuration;
+    }
 
 
     private double _cacheTimePos;
@@ -56,19 +71,17 @@ public partial class VideoControlModel : ViewModelBase
     public double VolumeValue
     {
         set => Handle.SetProperty("ao-volume", value);
-        get
-        {
-            try
-            {
-                var value = (double)Handle.GetProperty("ao-volume");
-                return value * 100;
-            }
-            catch (MpvException e)
-            {
-                Console.WriteLine($"get err {e.Code}");
-                return 0;
-            }
-        }
+        get => _active ? (double)Handle.GetProperty("ao-volume") : 0;
+        //try
+        //{
+        //    var value = (double)Handle.GetProperty("ao-volume");
+        //    return value;
+        //}
+        //catch (MpvException e)
+        //{
+        //    Console.WriteLine($"get err {e.Code}");
+        //    return 0;
+        //}
     }
 
     public bool Pause
@@ -77,9 +90,18 @@ public partial class VideoControlModel : ViewModelBase
         get => (bool)Handle.GetProperty("pause");
     }
 
-    
 
-    public bool Active => !(bool)Handle.GetProperty("idle-active");
+    private bool _active;
+
+    public bool Active
+    {
+        set
+        {
+            _active = value;
+            this.RaisePropertyChanged();
+        }
+        get => _active;
+    }
 
     public async void ChooseFile(object para)
     {
@@ -125,17 +147,15 @@ public partial class VideoControlModel : ViewModelBase
                 _cacheTimePos = (double)arg.NewValue;
                 VidelValue = _cacheTimePos;
                 break;
+            case "idle-active":
+                Active = !(bool)arg.NewValue; 
+                break;
         }
     }
 
     public void ActiveProperty(string name)
     {
-        var info = GetType().GetProperty(name);
-        if (info == null)
-        {
-            throw new ArgumentException("Property not found");
-        }
-
+        var info = GetType().GetProperty(name) ?? throw new ArgumentException("Property not found");
         MpvFormat format;
         var type = info.PropertyType;
         if (type == typeof(double))
