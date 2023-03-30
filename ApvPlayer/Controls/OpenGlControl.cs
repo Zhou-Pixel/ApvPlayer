@@ -1,24 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using ApvPlayer.Attributes;
-using ApvPlayer.EventArgs;
+using System.Globalization;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
 using ApvPlayer.FFI.LibMpv;
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Threading;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using Avalonia.Controls.Documents;
-using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
-using Avalonia.Interactivity;
-using Avalonia.Logging;
-using Avalonia.LogicalTree;
+using Avalonia.Input;
 using Avalonia.Media;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Avalonia.Threading;
 
 namespace ApvPlayer.Controls;
 
@@ -97,5 +86,13 @@ public sealed class OpenGlControl : OpenGlControlBase
         };
         Handle?.RenderContextCreate(parameters);
         Handle?.RenderContextSetUpdateCallback(UpdateGl, nint.Zero);
+    }
+
+    public override void Render(DrawingContext context)
+    {
+        base.Render(context);
+        Console.WriteLine("render");
+        
+        context.DrawText(new FormattedText("draw text", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface.Default, 20, null), new Point(20, 100));
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using ApvPlayer.Errors;
 using ApvPlayer.EventArgs;
@@ -158,7 +159,15 @@ public class Mpv
         int i = 0;
         foreach (var item in cmd)
         {
-            argPtr[i] = Marshal.StringToHGlobalAnsi(item + "\0");
+            #region In order to support Chinese file name
+
+            var bytes = Encoding.UTF8.GetBytes(item + "\0");
+            nint ptr = Marshal.AllocHGlobal(bytes.Length);
+            Marshal.Copy(bytes, 0, ptr, bytes.Length);
+
+            #endregion
+
+            argPtr[i] = ptr;
             i++;
         }
 

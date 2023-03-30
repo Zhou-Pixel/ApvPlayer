@@ -44,5 +44,7 @@ public partial class VideoControl : UserControl
     private void InputElement_OnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         Console.WriteLine("press input");
+        Console.WriteLine(sender);
     }
+
 }

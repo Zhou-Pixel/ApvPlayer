@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using ApvPlayer.Controls;
 using ApvPlayer.Errors;
@@ -55,11 +57,11 @@ public partial class VideoControlModel : ViewModelBase
     {
         set
         {
+            _videlValue = value;
             if (Active)
             {
                 Handle.SetProperty("time-pos", value);
             }
-            _videlValue = value;
             // this.RaisePropertyChanged();
         }
         get => _videlValue;
@@ -122,12 +124,15 @@ public partial class VideoControlModel : ViewModelBase
         });
         if (ret.Count == 0) return;
 
-        var gl = control.FindControl<OpenGlControl>("GlControl");
-        var st = Uri.UnescapeDataString(ret[0].Path.AbsolutePath);
+        var file = Uri.UnescapeDataString(ret[0].Path.AbsolutePath);
+
+
+
+
         Handle.CommandNode(new List<string>()
         {
             "loadfile",
-            st
+            file
         });
         //_handle?.CommandNode("loadfile", st);
         //gl?.OpenFile(st);

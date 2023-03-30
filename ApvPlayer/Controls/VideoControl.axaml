@@ -4,35 +4,29 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="using:ApvPlayer.Controls"
              xmlns:models="using:ApvPlayer.ViewModels"
-             xmlns:mpv="clr-namespace:ApvPlayer.FFI.LibMpv"
              x:DataType="models:VideoControlModel"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ApvPlayer.Controls.VideoControl" PointerPressed="InputElement_OnPointerPressed">
+             x:Class="ApvPlayer.Controls.VideoControl">
     <Design.DataContext>
         <models:VideoControlModel />
     </Design.DataContext>
-    <!-- <UserControl.Resources> -->
-    <!--     <mpv:Mpv x:Key="Mpv"></mpv:Mpv> -->
-    <!-- </UserControl.Resources> -->
 
-    <Grid RowDefinitions="*, Auto" ColumnDefinitions="*">
-        <local:OpenGlControl Handle="{Binding Handle}" Name="GlControl" Grid.Row="0">
-        </local:OpenGlControl>
-        <Grid Grid.Row="1" ColumnDefinitions="Auto, Auto, *, Auto" RowDefinitions="*">
+    <Grid RowDefinitions="*, Auto" ColumnDefinitions="*" ShowGridLines="True">
+        <local:OpenGlControl Grid.Row="0" Handle="{Binding Handle}" />
+        <Grid IsVisible="True" Grid.Row="1" ColumnDefinitions="Auto, Auto, *, Auto" RowDefinitions="*">
             <Grid.Styles>
                 <Style Selector="Button.Margin">
                     <Setter Property="Margin" Value="10, 0, 10, 0"></Setter>
                 </Style>
             </Grid.Styles>
-            <Button Name="ChooseButton"
-                    Command="{Binding ChooseFile}"
+            <Button Command="{Binding ChooseFile}"
                     CommandParameter="{Binding $parent[local:VideoControl]}"
-                    Classes="Margin" Grid.Column="0" Content="选择"/>
+                    Classes="Margin" 
+                    Grid.Column="0" 
+                    Content="选择"/>
             <Button Command="{Binding SwitchState}" Classes="Margin" Grid.Column="1" Content="播放/暂停" />
-            <Slider Name="VideoSlider" Maximum="{Binding VideoDuration}" Value="{Binding VidelValue}"  TextInput="VideoSlider_OnTextInput" IsSnapToTickEnabled="True" TickFrequency="1" Grid.Column="2" Orientation="Horizontal" />
-            <Slider IsEnabled="{Binding Active}" Margin="0, 10, 0, 10" Name="VolumeSlider" Maximum="100" Value="{Binding VolumeValue}" IsSnapToTickEnabled="True" TickFrequency="1" Grid.Column="3" Orientation="Vertical" />
+            <Slider IsEnabled="{Binding Active}" Maximum="{Binding VideoDuration}" Value="{Binding VidelValue}"  TextInput="VideoSlider_OnTextInput" IsSnapToTickEnabled="True" TickFrequency="1" Grid.Column="2" Orientation="Horizontal" />
+            <Slider IsEnabled="{Binding Active}" Margin="0, 5, 0, 5" Maximum="100" Value="{Binding VolumeValue}" IsSnapToTickEnabled="True" TickFrequency="1" Grid.Column="3" Orientation="Vertical" />
         </Grid>
     </Grid>
-
-
 </UserControl>
