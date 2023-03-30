@@ -1,0 +1,1 @@
+# ApvPlayer is a mpv front end, using Avalonia and opengl fbo to render video
