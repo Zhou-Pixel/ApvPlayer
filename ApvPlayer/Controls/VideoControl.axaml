@@ -6,7 +6,7 @@
              xmlns:models="using:ApvPlayer.ViewModels"
              x:DataType="models:VideoControlModel"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ApvPlayer.Controls.VideoControl">
+             x:Class="ApvPlayer.Controls.VideoControl" PointerPressed="InputElement_OnPointerPressed">
     <Design.DataContext>
         <models:VideoControlModel />
     </Design.DataContext>

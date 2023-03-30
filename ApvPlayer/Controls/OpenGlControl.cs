@@ -88,11 +88,11 @@ public sealed class OpenGlControl : OpenGlControlBase
         Handle?.RenderContextSetUpdateCallback(UpdateGl, nint.Zero);
     }
 
-    public override void Render(DrawingContext context)
-    {
-        base.Render(context);
-        Console.WriteLine("render");
+    //public override void Render(DrawingContext context)
+    //{
+    //    base.Render(context);
+    //    Console.WriteLine("render");
         
-        context.DrawText(new FormattedText("draw text", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface.Default, 20, null), new Point(20, 100));
-    }
+    //    context.DrawText(new FormattedText("draw text", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface.Default, 20, null), new Point(20, 100));
+    //}
 }
