@@ -145,7 +145,7 @@ public partial class VideoControlModel : ViewModelBase
                 break;
             case "time-pos":
                 var value = (double)arg.NewValue;
-                if (Math.Abs(_cacheTimePos - value) > 0.00001)
+                if (Math.Abs(_videlValue - value) > 0.00001)
                 {
                     _videlValue = value;
                     this.RaisePropertyChanged(nameof(VidelValue));
