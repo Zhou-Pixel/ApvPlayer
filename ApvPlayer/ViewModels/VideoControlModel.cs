@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using ApvPlayer.Controls;
 using ApvPlayer.Errors;
 using ApvPlayer.EventArgs;
@@ -50,18 +51,16 @@ public partial class VideoControlModel : ViewModelBase
     }
 
 
-    private double _cacheTimePos;
-
     public double VidelValue
     {
         set
         {
-            if (Math.Abs(_cacheTimePos - value) > 0.00001 && Active)
+            if (Active)
             {
                 Handle.SetProperty("time-pos", value);
             }
             _videlValue = value;
-            this.RaisePropertyChanged();
+            // this.RaisePropertyChanged();
         }
         get => _videlValue;
     }
@@ -103,9 +102,9 @@ public partial class VideoControlModel : ViewModelBase
         get => _active;
     }
 
-    public async void ChooseFile(object para)
+    public async Task ChooseFile(VideoControl control)
     {
-        var control = (VideoControl)para;
+        // var control = (VideoControl)para;
         var window = TopLevel.GetTopLevel(control);
         if (window == null) return;
         var ret = await window.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
@@ -142,10 +141,20 @@ public partial class VideoControlModel : ViewModelBase
         {
             case "duration":
                 VideoDuration = (double)arg.NewValue;
+                Console.WriteLine($"duration ==> {_videoDuration}");
                 break;
             case "time-pos":
-                _cacheTimePos = (double)arg.NewValue;
-                VidelValue = _cacheTimePos;
+                var value = (double)arg.NewValue;
+                if (Math.Abs(_cacheTimePos - value) > 0.00001)
+                {
+                    _videlValue = value;
+                    this.RaisePropertyChanged(nameof(VidelValue));
+                }
+                
+                
+                // _cacheTimePos = (double)arg.NewValue;
+                // VidelValue = _cacheTimePos;
+                Console.WriteLine($"time-pos: ==> {_videlValue}");
                 break;
             case "idle-active":
                 Active = !(bool)arg.NewValue; 

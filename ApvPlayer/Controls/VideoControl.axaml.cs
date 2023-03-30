@@ -1,8 +1,6 @@
 using System;
 using ApvPlayer.EventArgs;
-using ApvPlayer.FFI.LibMpv;
 using ApvPlayer.ViewModels;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
