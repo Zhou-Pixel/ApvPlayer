@@ -36,7 +36,7 @@ internal class Program
         string mpvPath;
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            mpvPath = "./mpv-2.dll";
+            mpvPath = "./libmpv-2.dll";
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
