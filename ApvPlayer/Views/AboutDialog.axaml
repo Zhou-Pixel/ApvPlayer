@@ -1,0 +1,71 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+             x:Class="ApvPlayer.Views.AboutDialog">
+    <UserControl.Styles>
+        <Style Selector="controls|Card">
+            <Setter Property="Margin" Value="0, 5"></Setter>
+        </Style>
+    </UserControl.Styles>
+    <TabControl Width="300" Height="400">
+        <TabItem Header="关于">
+            <StackPanel>
+                
+                <TextBlock Text="ApvPlayer is a mpv front end, using Avalonia and opengl fbo to render video"
+                           Margin="0, 10"
+                           FontSize="20"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Licence: GPL-2.0"
+                           FontSize="20"
+                           Margin="0, 10"/>
+            </StackPanel>
+        </TabItem>
+        <TabItem Header="许可">
+            <ScrollViewer>
+                <StackPanel>
+                    <controls:Card>
+                        <StackPanel>
+                            <TextBlock Classes="Headline6" Text="mpv" />
+                            <TextBlock Text="GPL-2.0"></TextBlock>
+                        </StackPanel>
+                    </controls:Card>
+                    <controls:Card>
+                        <StackPanel>
+                            <TextBlock Classes="Headline6" Text="Avalonia" />
+                            <TextBlock Text="MIT License"></TextBlock>
+                        </StackPanel>
+                    </controls:Card>
+                    <controls:Card>
+                        <StackPanel>
+                            <TextBlock Classes="Headline6" Text="Material.Avalonia" />
+                            <TextBlock Text="MIT License"></TextBlock>
+                        </StackPanel>
+                    </controls:Card>
+                    <controls:Card>
+                        <StackPanel>
+                            <TextBlock Classes="Headline6" Text="Material.Icons.Avalonia" />
+                            <TextBlock Text="MIT License"></TextBlock>
+                        </StackPanel>
+                    </controls:Card>
+                    <controls:Card>
+                        <StackPanel>
+                            <TextBlock Classes="Headline6" Text="DialogHost.Avalonia" />
+                            <TextBlock Text="MIT License"></TextBlock>
+                        </StackPanel>
+                    </controls:Card>
+                    <controls:Card>
+                        <StackPanel>
+                            <TextBlock Classes="Headline6" Text=".NET" />
+                            <TextBlock Text="MIT License"></TextBlock>
+                        </StackPanel>
+                    </controls:Card>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+    </TabControl>
+</UserControl>

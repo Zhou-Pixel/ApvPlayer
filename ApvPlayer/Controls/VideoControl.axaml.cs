@@ -1,19 +1,27 @@
-using System;
-using ApvPlayer.EventArgs;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using ApvPlayer.ViewModels;
 using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 
 namespace ApvPlayer.Controls;
 
 public partial class VideoControl : UserControl
 {
+
+
+    private WindowState _windowState = WindowState.Normal;
+
     public VideoControl()
     {
         InitializeComponent();
-        DataContext = new VideoControlModel();
+        var model = new VideoControlModel();
+        model.RequestUpdateGl += UpdateGl;
+        model.RequestOpenFile += GetOpenFile;
+        model.RequestFullScreen += SwitchFullScreen;
+        
+        DataContext = model;
     }
 
 
@@ -22,29 +30,29 @@ public partial class VideoControl : UserControl
         AvaloniaXamlLoader.Load(this);
     }
 
-    private async void Button_OnClick(object? sender, RoutedEventArgs e)
+    private void UpdateGl(object sender)
     {
+        this.FindControl<OpenGlControl>("GlControl")?.RequestNextFrameRendering();
     }
 
-    private void GlControl_OnMpvPropertyChanged(object sender, MpvPropertyChangedEventArgs arg)
+    private Task<IReadOnlyList<IStorageFile>> GetOpenFile(object sender, FilePickerOpenOptions opt)
     {
-
+        return TopLevel.GetTopLevel(this)!.StorageProvider.OpenFilePickerAsync(opt);
     }
 
-    private async void ChooseButton_OnClick(object? sender, RoutedEventArgs e)
+    private void SwitchFullScreen(object sender, bool full)
     {
+        if (TopLevel.GetTopLevel(this) is not Window window)
+            return;
+        if (window.WindowState != WindowState.FullScreen && full)
+        {
+            _windowState = window.WindowState;
+            window.WindowState = WindowState.FullScreen;
+        }
 
+        if (window.WindowState == WindowState.FullScreen && !full)
+        {
+            window.WindowState = _windowState;
+        }
     }
-
-    private void VideoSlider_OnTextInput(object? sender, TextInputEventArgs e)
-    {
-        Console.WriteLine("input");
-    }
-
-    private void InputElement_OnPointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        Console.WriteLine("press input");
-        Console.WriteLine(sender);
-    }
-
 }

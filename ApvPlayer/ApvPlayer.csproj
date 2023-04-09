@@ -22,7 +22,9 @@
     <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.0-preview5" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.0-preview5" />
     <PackageReference Include="DialogHost.Avalonia" Version="0.7.0-preview6" />
+    <PackageReference Include="Material.Avalonia" Version="3.0.0-avalonia11-preview3.148-nightly" />
     <PackageReference Include="Material.Icons.Avalonia" Version="2.0.0-preview2" />
+    <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="6.5.0-preview5" />
     <PackageReference Include="XamlNameReferenceGenerator" Version="1.6.1" />
   </ItemGroup>
 </Project>

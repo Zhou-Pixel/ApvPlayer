@@ -16,18 +16,23 @@
         <models:MainWindowViewModel />
     </Design.DataContext>
 
-    <dialogHostAvalonia:DialogHost Identifier="Dialog"
-                                   DialogMargin="16"
-                                   dialogHostAvalonia:DialogHostStyle.CornerRadius="8"
-                                   CloseOnClickAway="True">
-        <dialogHostAvalonia:DialogHost.DataTemplates>
-            <DataTemplate DataType="models:DialogViewModel">
-				<Grid RowDefinitions="Auto, *, Auto">
-                    <TextBlock></TextBlock>
-                </Grid>
-            </DataTemplate>
-        </dialogHostAvalonia:DialogHost.DataTemplates>
-        <local:VideoControl />
+    <dialogHostAvalonia:DialogHost Identifier="Popup" 
+                                   dialogHostAvalonia:DialogHostStyle.ClipToBounds="True"
+                                   dialogHostAvalonia:DialogHostStyle.CornerRadius="8">
+        <dialogHostAvalonia:DialogHost Identifier="Dialog"
+                                       DialogMargin="16"
+                                       DisableOpeningAnimation="True"
+                                       dialogHostAvalonia:DialogHostStyle.CornerRadius="8"
+                                       CloseOnClickAway="True">
+            <dialogHostAvalonia:DialogHost.DataTemplates>
+                <DataTemplate DataType="models:DialogViewModel">
+                    <Grid RowDefinitions="Auto, *, Auto">
+                        <TextBlock />
+                    </Grid>
+                </DataTemplate>
+            </dialogHostAvalonia:DialogHost.DataTemplates>
+            <local:VideoControl />
+        </dialogHostAvalonia:DialogHost>
     </dialogHostAvalonia:DialogHost>
 
 </Window>

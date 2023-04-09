@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using ApvPlayer.ViewModels;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Input;
+﻿using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Material.Styles;
 
 namespace ApvPlayer.Views;
 
@@ -14,7 +9,6 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-
     }
 
 

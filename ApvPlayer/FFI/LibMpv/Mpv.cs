@@ -21,6 +21,7 @@ public class Mpv
 
     private readonly Dictionary<string, object?> _valueCache = new();
     public event Action<object, MpvPropertyChangedEventArgs>? MpvPropertyChanged;
+    public event Action<object, MpvEventReceivedArgs>? MpvEventReceived;
     public Mpv()
     {
         _mpvWakeupCallback = WakeupCallback;
@@ -50,69 +51,82 @@ public class Mpv
             while (true)
             {
                 var evt = WaitEvent(0);
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    MpvEventReceived?.Invoke(this, new MpvEventReceivedArgs(evt));
+                });
                 if (evt.EventId == MpvEventId.MpvEventNone)
                 {
                     break;
                 }
-                else if (evt.EventId == MpvEventId.MpvEventPropertyChange)
+
+                switch (evt.EventId)
                 {
-                    MpvEventProperty prop = Marshal.PtrToStructure<MpvEventProperty>(evt.Data);
-                    string name = Marshal.PtrToStringAnsi(prop.Name) ?? string.Empty;
-                    var data = prop.TakeData();
-                    if (data == null)
+                    case MpvEventId.MpvEventPropertyChange:
                     {
-                        continue;
+                        MpvEventProperty prop = Marshal.PtrToStructure<MpvEventProperty>(evt.Data);
+                        string name = Marshal.PtrToStringAnsi(prop.Name) ?? string.Empty;
+                        var data = prop.TakeData();
+                        if (data == null)
+                        {
+                            continue;
+                        }
+                        bool fromMpv = true;
+                        if (_valueCache.TryGetValue(name, out object? value) && data.Equals(value))
+                            fromMpv = false;
+                        else
+                            fromMpv = true;
+                        Console.WriteLine($"property name {name} value {data} FromMpv {fromMpv}");
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            MpvPropertyChanged?.Invoke(this, new MpvPropertyChangedEventArgs(data, name, fromMpv));
+                        });
+                        //if (name == "time-pos")
+                        //{
+                        //    if (prop.Data == nint.Zero)
+                        //    {
+                        //        Console.WriteLine("continuw");
+                        //        continue;
+                        //    }
+                        //    var ret = new double[1];
+                        //    Marshal.Copy(prop.Data, ret, 0, 1);
+                        //    await Dispatcher.UIThread.InvokeAsync(() =>
+                        //    {
+                        //    });
+                        //}
+                        //else if (name == "duration")
+                        //{
+
+                        //    if (prop.Data == nint.Zero)
+                        //    {
+                        //        Console.WriteLine("continuw");
+                        //        continue;
+                        //    }
+
+                        //    var ret = new double[1];
+                        //    Marshal.Copy(prop.Data, ret, 0, 1);
+                        //    await Dispatcher.UIThread.InvokeAsync(() =>
+                        //    {
+                        //    });
+                        //}
+                        //else if (name == "ao-volume")
+                        //{
+                        //    var ret = new double[1];
+                        //    Marshal.Copy(prop.Data, ret, 0, 1);
+                        //    await Dispatcher.UIThread.InvokeAsync(() =>
+                        //    {
+                        //    });
+                        //}
+                        break;
                     }
-                    bool sp = true;
-                    if (_valueCache.ContainsKey(name) && data.Equals(_valueCache[name]))
-                        sp = false;
-                    else
-                        sp = true;
-                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    case MpvEventId.MpvEventEndFile:
                     {
-                        MpvPropertyChanged?.Invoke(this, new MpvPropertyChangedEventArgs(data, name, sp));
-                    });
-                    //if (name == "time-pos")
-                    //{
-                    //    if (prop.Data == nint.Zero)
-                    //    {
-                    //        Console.WriteLine("continuw");
-                    //        continue;
-                    //    }
-                    //    var ret = new double[1];
-                    //    Marshal.Copy(prop.Data, ret, 0, 1);
-                    //    await Dispatcher.UIThread.InvokeAsync(() =>
-                    //    {
-                    //    });
-                    //}
-                    //else if (name == "duration")
-                    //{
-
-                    //    if (prop.Data == nint.Zero)
-                    //    {
-                    //        Console.WriteLine("continuw");
-                    //        continue;
-                    //    }
-
-                    //    var ret = new double[1];
-                    //    Marshal.Copy(prop.Data, ret, 0, 1);
-                    //    await Dispatcher.UIThread.InvokeAsync(() =>
-                    //    {
-                    //    });
-                    //}
-                    //else if (name == "ao-volume")
-                    //{
-                    //    var ret = new double[1];
-                    //    Marshal.Copy(prop.Data, ret, 0, 1);
-                    //    await Dispatcher.UIThread.InvokeAsync(() =>
-                    //    {
-                    //    });
-                    //}
-
-                }
-                else
-                {
-                    Console.WriteLine(evt.EventId);
+                        
+                        break;
+                    }
+                    default:
+                        Console.WriteLine(evt.EventId);
+                        break;
                 }
             }
         });
@@ -374,7 +388,10 @@ public class Mpv
 
     public void RenderContextRender(Dictionary<MpvRenderParamType, object> parameters)
     { 
-        List<nint> toBeFree = new List<nint>();
+        var toBeFree = new List<nint>
+        {
+            Capacity = 0
+        };
         var paraArray = new MpvRenderParam[parameters.Count + 1];
 
         int i = 0;
