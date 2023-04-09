@@ -12,8 +12,4 @@ public partial class MainWindow : Window
     }
 
 
-    private async void Button_OnClick(object? sender, RoutedEventArgs e)
-    {
-        
-    }
 }
