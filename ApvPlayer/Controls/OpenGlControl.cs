@@ -21,11 +21,6 @@ public sealed class OpenGlControl : OpenGlControlBase, ICustomHitTest
         get => GetValue(HandleProperty);
     }
 
-    public OpenGlControl()
-    {
-        Console.WriteLine("rafdasfasdfasdfasdfasdf const");
-    }
-
     protected override void OnOpenGlRender(GlInterface gl, int fb)
     {
         double scaling = VisualRoot?.RenderScaling ?? 1.0;
@@ -73,7 +68,6 @@ public sealed class OpenGlControl : OpenGlControlBase, ICustomHitTest
         };
         Handle.RenderContextCreate(parameters);
         Handle.RenderContextSetUpdateCallback(UpdateGl, nint.Zero);
-        Console.WriteLine("============================================================================");
     }
 
 
