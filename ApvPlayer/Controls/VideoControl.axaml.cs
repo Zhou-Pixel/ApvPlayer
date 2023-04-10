@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ApvPlayer.ViewModels;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 
@@ -9,8 +11,6 @@ namespace ApvPlayer.Controls;
 
 public partial class VideoControl : UserControl
 {
-
-
     private WindowState _windowState = WindowState.Normal;
 
     public VideoControl()
@@ -54,5 +54,15 @@ public partial class VideoControl : UserControl
         {
             window.WindowState = _windowState;
         }
+    }
+
+    private void InputElement_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        Console.WriteLine("press mute");
+    }
+
+    private void InputElement_OnPointerEntered(object? sender, PointerEventArgs e)
+    {
+        Console.WriteLine("enter");
     }
 }

@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace ApvPlayer.FFI.LibMpv;
 
@@ -54,7 +55,11 @@ public struct MpvNode
                 break;
             case string str:
                 node.Format = MpvFormat.MpvFormatString;
-                node.Data.CString = Marshal.StringToHGlobalAnsi(str);
+                // node.Data.CString = Marshal.StringToHGlobalAnsi(str);
+                var bytes = Encoding.UTF8.GetBytes(str + "\0");
+                nint ptr = Marshal.AllocHGlobal(bytes.Length);
+                Marshal.Copy(bytes, 0, ptr, bytes.Length);
+                node.Data.CString = ptr;
                 break;
             case List<object> list:
             {

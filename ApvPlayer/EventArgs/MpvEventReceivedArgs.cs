@@ -6,9 +6,9 @@ public class MpvEventReceivedArgs : System.EventArgs
 {
     public MpvEvent Evnet { get; }
 
-    public MpvEventReceivedArgs(MpvEvent Evnet)
+    public MpvEventReceivedArgs(MpvEvent evnet)
     {
-        this.Evnet = Evnet;
+        this.Evnet = evnet;
     }
     
 }

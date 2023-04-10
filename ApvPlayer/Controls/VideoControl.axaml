@@ -21,8 +21,13 @@
             <MenuItem Header="打开">
                 <MenuItem Header="打开文件" Command="{Binding OpenLocalFileVideo}"/>
             </MenuItem>
+            <MenuItem Header="全屏" Command="{Binding SwitchFullScreen}">
+                <MenuItem.Icon>
+                    <local:CheckBox IsChecked="{Binding FullScreen}"></local:CheckBox>
+                </MenuItem.Icon>
+            </MenuItem>
             <MenuItem Header="控制"></MenuItem>
-            <MenuItem Header="属性"></MenuItem>
+            <MenuItem Header="属性" IsEnabled="{Binding Active}"></MenuItem>
             <MenuItem Header="关于" Command="{Binding ShowAboutDialog}"></MenuItem>
         </ContextMenu>
     </UserControl.Resources>
@@ -36,32 +41,41 @@
     </UserControl.Styles>
 
     <Grid RowDefinitions="*, Auto" ColumnDefinitions="*" ShowGridLines="False">
-        <Panel ContextMenu="{StaticResource Menu}" >
+        <Panel Grid.Row="0">
             <local:OpenGlControl x:Name="GlControl"
+                                 ContextMenu="{StaticResource Menu}"
                                  Handle="{Binding Handle}" />
             <StackPanel x:Name="ControlBar"
-                        Opacity="{Binding InnerControlBarOpacity}"
-                        IsPointerOver="{Binding IsOver, Mode=OneWayToSource}"
+                        IsEnabled="{Binding $self.IsPointerOver, Mode=OneWay}"
+                        Opacity="{Binding InnerControlBarOpacity, Mode=OneWay}"
+                        IsPointerOver="{Binding IsPointerOverInnerBar, Mode=OneWayToSource}"
                         Background="Wheat"
                         Orientation="Vertical"
                         VerticalAlignment="Bottom">
-                <Grid Grid.Row="1" ColumnDefinitions="*" RowDefinitions="Auto, Auto" ShowGridLines="False">
+                <Grid ColumnDefinitions="*" RowDefinitions="Auto, Auto" ShowGridLines="False">
                     <Grid Grid.Row="0" ColumnDefinitions="*, Auto, Auto" Margin="5" ShowGridLines="False">
-                <Slider Margin="10, 0, 0,0" IsEnabled="{Binding Active}"
-                        Maximum="{Binding VideoDuration}"
-                        Value="{Binding VideoValue}"
-                        Grid.Column="0"
-                        TickFrequency="1"
-                        IsSnapToTickEnabled="True"
-                        Orientation="Horizontal"/>
-                <icon:Icon Classes="Volume" Grid.Column="1"
-                           Margin="20, 0, 10, 0"
-                           Value="fa-solid fa-volume-high"/>
-                <Slider MinWidth="80" IsEnabled="{Binding Active}"
-                        Maximum="100"
-                        Value="{Binding VolumeValue}"
-                        Grid.Column="2"/>
-            </Grid>
+                        <Slider Margin="10, 0, 0,0" IsEnabled="{Binding Active}"
+                                Maximum="{Binding VideoDuration}"
+                                Value="{Binding VideoValue}"
+                                Grid.Column="0"
+                                TickFrequency="1"
+                                IsSnapToTickEnabled="True"
+                                Orientation="Horizontal" />
+                        <icon:Icon Grid.Column="1"
+                                   Classes="Volume"
+                                   Margin="20, 0, 10, 0"
+                                   Value="{Binding VolumeIcon}">
+                            <Interaction.Behaviors>
+                                <EventTriggerBehavior EventName="PointerPressed" SourceObject="{Binding $self}">
+                                    <InvokeCommandAction Command="{Binding SwitchMute}"></InvokeCommandAction>
+                                </EventTriggerBehavior>
+                            </Interaction.Behaviors> 
+                        </icon:Icon>
+                        <Slider MinWidth="80"
+                                Maximum="100"
+                                Value="{Binding VolumeValue}"
+                                Grid.Column="2" />
+                    </Grid>
             
                     <Grid Margin="5" Grid.Row="1" Grid.Column="0" ColumnDefinitions="Auto, Auto, Auto Auto, *, Auto" ShowGridLines="False">
                 <Button Command="{Binding SwitchState}"
@@ -101,8 +115,14 @@
                         Orientation="Horizontal"/>
                 <icon:Icon Classes="Volume" Grid.Column="1"
                            Margin="20, 0, 10, 0"
-                           Value="fa-solid fa-volume-high"/>
-                <Slider MinWidth="80" IsEnabled="{Binding Active}"
+                           Value="{Binding VolumeIcon}">
+                    <Interaction.Behaviors>
+                        <EventTriggerBehavior EventName="PointerPressed" SourceObject="{Binding $self}">
+                            <InvokeCommandAction Command="{Binding SwitchMute}"></InvokeCommandAction>
+                        </EventTriggerBehavior>
+                    </Interaction.Behaviors>
+                </icon:Icon>
+                <Slider MinWidth="80" 
                         Maximum="100"
                         Value="{Binding VolumeValue}"
                         Grid.Column="2"/>

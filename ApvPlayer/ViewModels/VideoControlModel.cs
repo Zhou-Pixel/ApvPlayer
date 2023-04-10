@@ -42,19 +42,30 @@ public class VideoControlModel : ViewModelBase
         Handle.ObserveProperty("idle-active", MpvFormat.MpvFormatFlag);
         Handle.ObserveProperty("seekable", MpvFormat.MpvFormatFlag);
         Handle.ObserveProperty("pause", MpvFormat.MpvFormatFlag);
-        Handle.MpvPropertyChanged += MpvPropertyChanged;
+        Handle.MpvPropertyChanged += OnMpvPropertyChanged;
+        Handle.MpvEventReceived += OnMpvEventReceived;
+        
         this.WhenAnyValue(o => o.FullScreen)
             .Subscribe(o =>
             {
                 this.RaisePropertyChanged(nameof(InnerControlBarOpacity));
                 this.RaisePropertyChanged(nameof(FullScreenText));
             });
-        this.WhenAnyValue(o => o.IsOver)
+        this.WhenAnyValue(o => o.IsPointerOverInnerBar)
             .Subscribe(o => this.RaisePropertyChanged(nameof(InnerControlBarOpacity)));
         this.WhenAnyValue(o => o.VideoDuration)
             .Subscribe(o => this.RaisePropertyChanged(nameof(ProgressText)));
         this.WhenAnyValue(o => o.VideoValue)
             .Subscribe(o => this.RaisePropertyChanged(nameof(ProgressText)));
+    }
+
+    private void OnMpvEventReceived(object sender, MpvEventReceivedArgs args)
+    {
+        if (args.Evnet.EventId == MpvEventId.MpvEventPlaybackRestart)
+        {
+            Handle.SetProperty("ao-volume", _volumeValue);
+            Handle.SetProperty("ao-mute", _isMute);
+        }
     }
 
 
@@ -85,10 +96,18 @@ public class VideoControlModel : ViewModelBase
 
     private double _videoValue;
 
+    private double _volumeValue = 50;
+    
     public double VolumeValue
     {
-        set => Handle.SetProperty("ao-volume", value);
-        get => _active ? (double)Handle.GetProperty("ao-volume") : 50;
+        set
+        {
+            if (Active)
+                Handle.SetProperty("ao-volume", value);
+
+            this.RaiseAndSetIfChanged(ref _volumeValue, value);
+        }
+        get => Active ? (double)Handle.GetProperty("ao-volume") : _volumeValue;
         //try
         //{
         //    var value = (double)Handle.GetProperty("ao-volume");
@@ -137,27 +156,38 @@ public class VideoControlModel : ViewModelBase
 
     public string FullScreenText => FullScreen ? "fa-solid fa-compress" : "fa-solid fa-expand";
 
-    public double InnerControlBarOpacity
-    {
-        get
-        {
+    public double InnerControlBarOpacity => IsPointerOverInnerBar && FullScreen ? 1 : 0;
 
-            return IsOver && FullScreen ? 1 : 0;
-        }
+    private bool _isPointerOverInnerBar = false;
+
+    public bool IsPointerOverInnerBar
+    {
+        set => this.RaiseAndSetIfChanged(ref _isPointerOverInnerBar, value);
+        get => _isPointerOverInnerBar;
+    }
+
+    private bool _isMute = false;
+
+    public bool IsMute
+    {
+        get => Active ? (bool)Handle.GetProperty("ao-mute") : _isMute;
         set
         {
-            
+            if (Active)
+                Handle.SetProperty("ao-mute", value);
+            VolumeIcon = value ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
+            this.RaiseAndSetIfChanged(ref _isMute, value);
         }
     }
 
-    private bool _isOver = false;
-
-    public bool IsOver
+    private string _volumeIcon = "fa-solid fa-volume-high";
+    public string VolumeIcon
     {
-        set => this.RaiseAndSetIfChanged(ref _isOver, value);
-        get => _isOver;
+        set => this.RaiseAndSetIfChanged(ref _volumeIcon, value);
+        get => _volumeIcon;
     }
 
+    public string VideoFormat => (string)Handle.GetProperty("video-format");
     public async Task SwitchState()
     {
         //await DialogHostAvalonia.DialogHost.Show(new Button()
@@ -180,6 +210,12 @@ public class VideoControlModel : ViewModelBase
         //gl?.OpenFile(st);
     }
 
+
+    public void SwitchMute()
+    {
+        if (Active)
+            IsMute = !IsMute;
+    }
     public async Task OpenLocalFileVideo()
     {
         if (RequestOpenFile == null)
@@ -265,7 +301,7 @@ public class VideoControlModel : ViewModelBase
         FullScreen = !FullScreen;
     }
 
-    private void MpvPropertyChanged(object sender, MpvPropertyChangedEventArgs arg)
+    private void OnMpvPropertyChanged(object sender, MpvPropertyChangedEventArgs arg)
     {
         switch (arg.MpvPropertyName)
         {
