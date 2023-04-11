@@ -40,7 +40,7 @@ internal class Program
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            mpvPath = "/usr/local/Cellar/mpv/0.35.1/lib/libmpv.dylib";
+            mpvPath = "/usr/local/Cellar/mpv/0.35.1_1/lib/libmpv.dylib";
         }
         else
         {
