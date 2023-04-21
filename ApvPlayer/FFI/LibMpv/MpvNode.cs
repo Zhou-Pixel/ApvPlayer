@@ -56,10 +56,10 @@ public struct MpvNode
             case string str:
                 node.Format = MpvFormat.MpvFormatString;
                 // node.Data.CString = Marshal.StringToHGlobalAnsi(str);
-                var bytes = Encoding.UTF8.GetBytes(str + "\0");
-                nint ptr = Marshal.AllocHGlobal(bytes.Length);
-                Marshal.Copy(bytes, 0, ptr, bytes.Length);
-                node.Data.CString = ptr;
+                //var bytes = Encoding.UTF8.GetBytes(str + "\0");
+                //nint ptr = Marshal.AllocHGlobal(bytes.Length);
+                //Marshal.Copy(bytes, 0, ptr, bytes.Length);
+                node.Data.CString = Marshal.StringToCoTaskMemUTF8(str);
                 break;
             case List<object> list:
             {
@@ -101,7 +101,7 @@ public struct MpvNode
                 int i = 0;
                 foreach (var item in dictionary)
                 {
-                    MpvNode tmp = MpvNode.FromObject(item.Value);
+                    MpvNode tmp = FromObject(item.Value);
                     Marshal.StructureToPtr(tmp, nodeList.NodeValues + i * nodeSize, true);
                     i++;
 
@@ -160,8 +160,23 @@ public struct MpvNode
             }
             case MpvFormat.MpvFormatString:
             {
-                //ret = Marshal.PtrToStringAnsi(Data.CString);
-                ret = Data.CString;
+                nint ptr = Data.CString;
+                //var s = Marshal.PtrToStringUTF8(ptr);
+                //int count = 0;
+                //while (true)
+                //{
+                //    byte b = Marshal.ReadByte(ptr);
+                //    if (b == 0)
+                //        break;
+                //    ptr++;
+                //    count++;
+                //}
+                //byte[] byteString = new byte[count];
+                //Marshal.Copy(ptr, byteString, 0, count);
+                //ret = Encoding.Default.GetString(byteString);
+                    //ret = Data.CString;
+                
+                ret = Marshal.PtrToStringUTF8(ptr);
                 break;
             }
             case MpvFormat.MpvFormatFlag:
@@ -211,7 +226,7 @@ public struct MpvNode
                     var sizePtr = Marshal.SizeOf<nint>();
 
                     var stringPtr = Marshal.ReadIntPtr(nodeList.Key + i * sizePtr);
-                    string key = Marshal.PtrToStringAnsi(stringPtr)!;
+                    string key = Marshal.PtrToStringUTF8(stringPtr)!;
                     
                     tmp.Add(key, node);
                 }
@@ -220,14 +235,17 @@ public struct MpvNode
                 break;
             }
             case MpvFormat.MpvFormatNone:
+                return null;
             case MpvFormat.MpvFormatOsdString:
             case MpvFormat.MpvFormatNode:
             case MpvFormat.MpvFormatByteArray:
             default:
-                throw new NotSupportedException("not support current format node");
+                //throw new NotSupportedException("not support current format node");
+                Console.WriteLine("not support current format node");
+                return null;
                 
         }
-
+        Console.WriteLine($"format ==> {Format} {ret}");
         return ret;
     }
 }

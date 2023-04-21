@@ -1,9 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using ApvPlayer.Controls;
+using ApvPlayer.Errors;
 using ApvPlayer.EventArgs;
 using ApvPlayer.FFI.LibMpv;
 using ApvPlayer.Views;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Platform.Storage;
 using DialogHostAvalonia;
 using ReactiveUI;
@@ -33,6 +42,7 @@ public class VideoControlModel : ViewModelBase
 
     // public required VideoControl Owner { private get; init; }
 
+    private bool _playbackInitialized = false;
 
     public Mpv Handle { get; } = new();
 
@@ -51,23 +61,42 @@ public class VideoControlModel : ViewModelBase
                 this.RaisePropertyChanged(nameof(InnerControlBarOpacity));
                 this.RaisePropertyChanged(nameof(FullScreenText));
             });
+
         this.WhenAnyValue(o => o.IsPointerOverInnerBar)
-            .Subscribe(o => this.RaisePropertyChanged(nameof(InnerControlBarOpacity)));
+            .Subscribe(_ => this.RaisePropertyChanged(nameof(InnerControlBarOpacity)));
+
         this.WhenAnyValue(o => o.VideoDuration)
-            .Subscribe(o => this.RaisePropertyChanged(nameof(ProgressText)));
+            .Subscribe(_ => this.RaisePropertyChanged(nameof(ProgressText)));
+
         this.WhenAnyValue(o => o.VideoValue)
-            .Subscribe(o => this.RaisePropertyChanged(nameof(ProgressText)));
+            .Subscribe(_ => this.RaisePropertyChanged(nameof(ProgressText)));
+
+        this.WhenAnyValue(o => o.SubtitleTrack)
+            .Subscribe(_ => this.RaisePropertyChanged(nameof(SubtitleMenuItems)));
+
+        AddSubtitleCommand = ReactiveCommand.Create(AddSubTitle);
+        SelectSubtitleCommand = ReactiveCommand.Create<MenuItem>(SelectSubtitle);
     }
 
     private void OnMpvEventReceived(object sender, MpvEventReceivedArgs args)
     {
-        if (args.Evnet.EventId == MpvEventId.MpvEventPlaybackRestart)
+        if (args.Evnet.EventId == MpvEventId.MpvEventPlaybackRestart && !_playbackInitialized)
         {
+            _playbackInitialized = true;
             Handle.SetProperty("ao-volume", _volumeValue);
             Handle.SetProperty("ao-mute", _isMute);
+            UpdateTracks();
         }
+
     }
 
+    public ReactiveCommand<Unit, Task> AddSubtitleCommand { get; init; }
+
+    public ReactiveCommand<MenuItem, Unit> SelectSubtitleCommand { get; init; }
+
+    #region Property
+
+    
 
     private double _videoDuration = 100;
 
@@ -187,6 +216,86 @@ public class VideoControlModel : ViewModelBase
         get => _volumeIcon;
     }
 
+
+    private Dictionary<long, string>? _videoTrack;
+
+    public Dictionary<long, string>? VideoTrack 
+    {
+        set => this.RaiseAndSetIfChanged(ref _videoTrack, value);
+        get => _videoTrack; 
+    }
+
+    private Dictionary<long, string>? _subtitleTrack;
+
+    public Dictionary<long, string>? SubtitleTrack
+    {
+        set => this.RaiseAndSetIfChanged(ref _subtitleTrack, value);
+        get => _subtitleTrack;
+    }
+
+    private Dictionary<long, string>? _audioTrack;
+
+    public Dictionary<long, string>? AudioTrack
+    {
+        set => this.RaiseAndSetIfChanged(ref _audioTrack, value);
+        get => _audioTrack;
+    }
+
+
+    public List<object> SubtitleMenuItems
+    {
+        get
+        {
+            var list = new List<object>();
+            var addBinding = new Binding()
+            {
+                Source = this,
+                Path = nameof(AddSubtitleCommand),
+                Mode = BindingMode.OneWay
+            };
+            MenuItem addItem = new MenuItem()
+            {
+                Header = "添加字幕",
+            };
+            addItem.Bind(MenuItem.CommandProperty, addBinding);
+
+            list.Add(addItem);
+
+            if (SubtitleTrack == null) return list;
+
+            foreach (var i in SubtitleTrack)
+            {
+                var item = new MenuItem()
+                {
+                    Header = i.Value,
+                    Icon = new ApvPlayer.Controls.CheckBox()
+                    {
+                        CheckedIcon = "fa-solid fa-check",
+                        UnCheckedIcon = "",
+                        IsChecked = false
+                    }
+                };
+                var subBinding = new Binding()
+                {
+                    Source = this,
+                    Path = nameof(SelectSubtitleCommand),
+                    Mode = BindingMode.OneWay
+                };
+                item.Bind(MenuItem.CommandProperty, subBinding);
+                var paraBinding = new Binding()
+                {
+                    Source = item,
+                    Path = "$self",
+                };
+                item.Bind(MenuItem.CommandParameterProperty, paraBinding);
+                list.Add(item);
+            }
+
+            return list;
+
+        }
+    }
+
     public string VideoFormat => (string)Handle.GetProperty("video-format");
     public async Task SwitchState()
     {
@@ -213,9 +322,9 @@ public class VideoControlModel : ViewModelBase
 
     public void SwitchMute()
     {
-        if (Active)
-            IsMute = !IsMute;
+        IsMute = !IsMute;
     }
+    #endregion
     public async Task OpenLocalFileVideo()
     {
         if (RequestOpenFile == null)
@@ -256,11 +365,7 @@ public class VideoControlModel : ViewModelBase
 
         var file = Uri.UnescapeDataString(ret[0].Path.AbsolutePath);
 
-        Handle.CommandNode(new List<string>()
-        {
-            "loadfile",
-            file
-        });
+        var retNode = Handle.CommandNode("loadfile", file);
     }
 
     public string ProgressText =>
@@ -279,7 +384,7 @@ public class VideoControlModel : ViewModelBase
         return min switch
         {
             0 => $"00:00:{valueInt:d2}",
-            > 0 and < 60 => $"00:{min:d3}:{(min % 60):d2}",
+            > 0 and < 60 => $"00:{min:d2}:{(min % 60):d2}",
             _ => $"{(min / 60):d2}:{(min % 60):d2}:{(valueInt % 60):d2}"
         };
     }
@@ -300,6 +405,8 @@ public class VideoControlModel : ViewModelBase
     {
         FullScreen = !FullScreen;
     }
+    
+    
 
     private void OnMpvPropertyChanged(object sender, MpvPropertyChangedEventArgs arg)
     {
@@ -326,6 +433,7 @@ public class VideoControlModel : ViewModelBase
                 Active = !(bool)arg.NewValue;
                 if (!Active)
                 {
+                    _playbackInitialized = false;
                     RequestUpdateGl?.Invoke(this);
                     _videoValue = 0;
                     this.RaisePropertyChanged(nameof(VideoValue));
@@ -349,6 +457,41 @@ public class VideoControlModel : ViewModelBase
             }
 
         }
+    }
+
+
+    public void SelectSubtitle(MenuItem item)
+    {
+        
+    }
+
+    public async Task AddSubTitle()
+    {
+        if (!Active) return;
+        if (RequestOpenFile == null) return;
+        var openOptions = new FilePickerOpenOptions()
+        {
+            Title = "选择字幕",
+            FileTypeFilter = new[]
+            {
+                new FilePickerFileType("字幕")
+                {
+                    Patterns = new[] { "*.ass", "*.sup", "*.flv" }
+                }
+            },
+            AllowMultiple = false
+
+        };
+        var ret = await RequestOpenFile.Invoke(this, openOptions);
+        if (ret.Count == 0) return;
+
+        var file = ret[0].Path.LocalPath;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            file = @"\\?\" + file;
+        }
+        var node = Handle.CommandNode("sub-add", file);
+        UpdateTracks();
     }
 
     public void ActiveProperty(string name)
@@ -382,6 +525,47 @@ public class VideoControlModel : ViewModelBase
     public void Stop()
     {
         Handle.CommandNode("stop", "keep-playlist");
+    }
+
+    private void UpdateTracks()
+    {
+        var videoTrack = new Dictionary<long, string>();
+        var subtitleTrack = new Dictionary<long, string>();
+        var audioTrack = new Dictionary<long, string>();
+        long count = (long)Handle.GetProperty("track-list/count");
+        Console.WriteLine($"count ==> {count}");
+        for (int i = 0; i < count; i++)
+        {
+            try
+            {
+
+                string type = (string)Handle.GetProperty($"track-list/{i}/type");
+                long id = (long)Handle.GetProperty($"track-list/{i}/id");
+                string title = (string)Handle.GetProperty($"track-list/{i}/title");
+                switch (type)
+                {
+                    case "video":
+                        videoTrack.Add(id, title);
+                        break;
+                    case "audio":
+                        audioTrack.Add(id, title);
+                        break;
+                    case "sub":
+                        subtitleTrack.Add(id, title);
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+            catch (MpvException)
+            {
+                Console.WriteLine($"invalid error");
+            }
+        }
+
+        VideoTrack = videoTrack;
+        AudioTrack = audioTrack;
+        SubtitleTrack = subtitleTrack;
     }
 
     //private void RaiseMpvPropertyChanged(string mpvPropertyName)

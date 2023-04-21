@@ -17,9 +17,17 @@ internal class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        MpvSetUp();
-        BuildAvaloniaApp()
-            .StartWithClassicDesktopLifetime(args);
+        try
+        {
+            MpvSetUp();
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"catch error {e.Message}");
+            throw;
+        }
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
@@ -36,7 +44,7 @@ internal class Program
         string mpvPath;
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            mpvPath = "./libmpv-2.dll";
+            mpvPath = "./mpv-2.dll";
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {

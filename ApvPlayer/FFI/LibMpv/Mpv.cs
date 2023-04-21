@@ -76,7 +76,7 @@ public class Mpv
                             fromMpv = false;
                         else
                             fromMpv = true;
-                        Console.WriteLine($"property name {name} value {data} FromMpv {fromMpv}");
+                        // Console.WriteLine($"property name {name} value {data} FromMpv {fromMpv}");
                         await Dispatcher.UIThread.InvokeAsync(() =>
                         {
                             MpvPropertyChanged?.Invoke(this, new MpvPropertyChangedEventArgs(data, name, fromMpv));
@@ -175,7 +175,7 @@ public class Mpv
         {
             #region In order to support Chinese file name
 
-            var bytes = Encoding.UTF8.GetBytes(item + "\0");
+            var bytes = Encoding.UTF8.GetBytes(item + '\0');
             nint ptr = Marshal.AllocHGlobal(bytes.Length);
             Marshal.Copy(bytes, 0, ptr, bytes.Length);
 
@@ -261,7 +261,7 @@ public class Mpv
     }
 
 
-    public void CommandNode(List<object> cmd)
+    public object? CommandNode(List<object> cmd)
     {
         MpvNode node = MpvNode.FromObject(cmd);
         nint nodePtr = Marshal.AllocHGlobal(Marshal.SizeOf<MpvNode>());
@@ -270,28 +270,23 @@ public class Mpv
         var outPtr = Marshal.AllocHGlobal(Marshal.SizeOf<MpvNode>());
         int code = MpvFunctions.CommandNode(_mpvHandle, nodePtr, outPtr);
         var outNode = Marshal.PtrToStructure<MpvNode>(outPtr);
-        if (outNode.Format == MpvFormat.MpvFormatNodeMap)
-        {
-            
-            var list = Marshal.PtrToStructure<MpvNodeList>(outNode.Data.NodeList);
-            var value = Marshal.PtrToStructure<MpvNode>(list.NodeValues);
-            //var valuePtr = Marshal.ReadIntPtr(list.Key);
-            //var str = Marshal.PtrToStringAnsi(valuePtr);
-            //var value = Marshal.PtrToStructure<MpvNode>(valuePtr);
-        }
+
         node.Free();
-        
+
+        object? ret = outNode.ToObject();
         Marshal.FreeHGlobal(nodePtr);
         Marshal.FreeHGlobal(outPtr);
         if (code != 0)
         {
             throw new MpvException(code);
         }
+
+        return ret;
     }
 
-    public void CommandNode(params object[] cmd)
+    public object? CommandNode(params object[] cmd)
     {
-        CommandNode(cmd.ToList());
+        return CommandNode(cmd.ToList());
     }
     public MpvEvent WaitEvent(double timeout)
     {
@@ -482,7 +477,7 @@ public class Mpv
 
     public object GetProperty(string name)
     {
-        var namePtr = Marshal.StringToHGlobalAnsi(name);
+        var namePtr = Marshal.StringToCoTaskMemUTF8(name);
         var nodePtr = Marshal.AllocHGlobal(Marshal.SizeOf<MpvNode>());
         int code = MpvFunctions.GetProperty(_mpvHandle, namePtr, MpvFormat.MpvFormatNode, nodePtr);
         Marshal.FreeHGlobal(namePtr);
