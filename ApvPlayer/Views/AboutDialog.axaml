@@ -2,13 +2,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:material="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ApvPlayer.Views.AboutDialog">
     <TabControl Width="500" Height="400">
         <TabItem Header="关于">
             <StackPanel>
                 <TextBlock Text="ApvPlayer 0.0.1" 
-                           Classes="H3" Theme="{StaticResource TitleTextBlock}"
+                           Classes="Headline6" 
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"/>
                 <TextBlock Text="ApvPlayer is a mpv front end, using Avalonia and opengl fbo to render video"
@@ -25,36 +26,37 @@
         <TabItem Header="许可">
             <ScrollViewer>
                 <StackPanel>
-                    <Border Classes="Hover" Theme="{StaticResource CardBorder}">
+                    
+                    <material:Card>
                         <StackPanel>
-                            <TextBlock Classes="H5" Theme="{StaticResource TitleTextBlock}" Text="mpv" />
+                            <TextBlock Classes="Headline6" Text="mpv" />
                             <TextBlock Text="GPL-2.0"></TextBlock>
                         </StackPanel>
-                    </Border>
-                    <Border Classes="Hover" Theme="{StaticResource CardBorder}">
+                    </material:Card>
+                    <material:Card>
                         <StackPanel>
-                            <TextBlock Classes="H5" Theme="{StaticResource TitleTextBlock}" Text="Avalonia" />
+                            <TextBlock Classes="Headline6" Text="Avalonia" />
                             <TextBlock Text="MIT License"></TextBlock>
                         </StackPanel>
-                    </Border>
-                    <Border Classes="Hover" Theme="{StaticResource CardBorder}">
+                    </material:Card>
+                    <material:Card>
                         <StackPanel>
-                            <TextBlock Classes="H5" Theme="{StaticResource TitleTextBlock}" Text="Semi.Avalonia" />
+                            <TextBlock Classes="Headline6" Text="Semi.Avalonia" />
                             <TextBlock Text="MIT License"></TextBlock>
                         </StackPanel>
-                    </Border>
-                    <Border Classes="Hover" Theme="{StaticResource CardBorder}">
+                    </material:Card>
+                    <material:Card>
                         <StackPanel>
-                            <TextBlock Classes="H5" Theme="{StaticResource TitleTextBlock}" Text="DialogHost.Avalonia" />
+                            <TextBlock Classes="Headline6" Text="DialogHost.Avalonia" />
                             <TextBlock Text="MIT License"></TextBlock>
                         </StackPanel>
-                    </Border>
-                    <Border Classes="Hover" Theme="{StaticResource CardBorder}">
+                    </material:Card>
+                    <material:Card>
                         <StackPanel>
-                            <TextBlock Classes="H5" Theme="{StaticResource TitleTextBlock}" Text=".NET" />
+                            <TextBlock Classes="Headline6" Text=".NET" />
                             <TextBlock Text="MIT License"></TextBlock>
                         </StackPanel>
-                    </Border>
+                    </material:Card>
                 </StackPanel>
             </ScrollViewer>
         </TabItem>
