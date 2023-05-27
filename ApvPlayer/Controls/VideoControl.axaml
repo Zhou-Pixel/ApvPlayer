@@ -26,15 +26,15 @@
                     <local:CheckBox IsChecked="{Binding FullScreen}"></local:CheckBox>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="字幕" Items="{Binding SubtitleMenuItems, Mode=OneWay}">
-                <!--<MenuItem Header="添加字幕" Command="{Binding AddSubTitle}"></MenuItem>
-                <Separator></Separator>
-                <MenuItem Command="{Binding SelectSubtitle}"
-                          CommandParameter="{Binding $self}">
-                    <MenuItem.Icon>
-                        <local:CheckBox CheckedIcon="fa-solid fa-check" UnCheckedIcon=""></local:CheckBox>
-                    </MenuItem.Icon>
-                </MenuItem>-->
+            <MenuItem Header="字幕">
+                <!-- <MenuItem Header="添加字幕" Command="{Binding AddSubTitle}"></MenuItem> -->
+                <!-- <Separator></Separator> -->
+                <!-- <MenuItem Command="{Binding SelectSubtitle}" -->
+                <!--           CommandParameter="{Binding $self}"> -->
+                <!--     <MenuItem.Icon> -->
+                <!--         <local:CheckBox CheckedIcon="fa-solid fa-check" UnCheckedIcon=""></local:CheckBox> -->
+                <!--     </MenuItem.Icon> -->
+                <!-- </MenuItem> -->
             </MenuItem>
             <MenuItem Header="控制"></MenuItem>
             <MenuItem Header="属性" IsEnabled="{Binding Active}"></MenuItem>
@@ -57,7 +57,7 @@
 
     <Grid RowDefinitions="*, Auto" ColumnDefinitions="*" ShowGridLines="False">
         <Panel Grid.Row="0">
-            <local:OpenGlControl x:Name="GlControl"
+            <local:OpenGlControl x:Name="MpvControl"
                                  ContextMenu="{StaticResource TopLevelMenu}"
                                  Handle="{Binding Handle}" />
             <StackPanel x:Name="ControlBar"

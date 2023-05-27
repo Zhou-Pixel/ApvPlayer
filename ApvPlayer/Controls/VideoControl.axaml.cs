@@ -32,7 +32,7 @@ public partial class VideoControl : UserControl
 
     private void UpdateGl(object sender)
     {
-        this.FindControl<OpenGlControl>("GlControl")?.RequestNextFrameRendering();
+        this.FindControl<OpenGlControl>("MpvControl")?.RequestNextFrameRendering();
     }
 
     private Task<IReadOnlyList<IStorageFile>> GetOpenFile(object sender, FilePickerOpenOptions opt)
