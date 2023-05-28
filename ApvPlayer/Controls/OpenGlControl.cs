@@ -72,4 +72,5 @@ public sealed class OpenGlControl : OpenGlControlBase, ICustomHitTest
 
 
     public bool HitTest(Point point) => true;
+    
 }

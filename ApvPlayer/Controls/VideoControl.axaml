@@ -61,13 +61,12 @@
                                  ContextMenu="{StaticResource TopLevelMenu}"
                                  Handle="{Binding Handle}" />
             <StackPanel x:Name="ControlBar"
-                        IsEnabled="{Binding $self.IsPointerOver, Mode=OneWay}"
-                        Opacity="{Binding InnerControlBarOpacity, Mode=OneWay}"
                         IsPointerOver="{Binding IsPointerOverInnerBar, Mode=OneWayToSource}"
+                        Opacity="{Binding InnerControlBarOpacity, Mode=OneWay}"
                         Background="Wheat"
                         Orientation="Vertical"
                         VerticalAlignment="Bottom">
-                <Grid ColumnDefinitions="*" RowDefinitions="Auto, Auto" ShowGridLines="False">
+                <Grid ColumnDefinitions="*" RowDefinitions="Auto, Auto" ShowGridLines="False" IsEnabled="{Binding ControlBarEnable}">
                     <Grid Grid.Row="0" ColumnDefinitions="*, Auto, Auto" Margin="5" ShowGridLines="False">
                         <Slider Margin="10, 0, 0,0" IsEnabled="{Binding Active}"
                                 Maximum="{Binding VideoDuration}"

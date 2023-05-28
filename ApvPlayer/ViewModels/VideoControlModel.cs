@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using ApvPlayer.Controls;
 using ApvPlayer.Errors;
 using ApvPlayer.EventArgs;
 using ApvPlayer.FFI.LibMpv;
@@ -56,14 +53,19 @@ public class VideoControlModel : ViewModelBase
         Handle.MpvEventReceived += OnMpvEventReceived;
         
         this.WhenAnyValue(o => o.FullScreen)
-            .Subscribe(o =>
+            .Subscribe(_ =>
             {
+                this.RaisePropertyChanged(nameof(ControlBarEnable));
                 this.RaisePropertyChanged(nameof(InnerControlBarOpacity));
                 this.RaisePropertyChanged(nameof(FullScreenText));
             });
 
         this.WhenAnyValue(o => o.IsPointerOverInnerBar)
-            .Subscribe(_ => this.RaisePropertyChanged(nameof(InnerControlBarOpacity)));
+            .Subscribe(_ =>
+            {
+                this.RaisePropertyChanged(nameof(ControlBarEnable));
+                this.RaisePropertyChanged(nameof(InnerControlBarOpacity));
+            });
 
         this.WhenAnyValue(o => o.VideoDuration)
             .Subscribe(_ => this.RaisePropertyChanged(nameof(ProgressText)));
@@ -186,6 +188,9 @@ public class VideoControlModel : ViewModelBase
     public string FullScreenText => FullScreen ? "fa-solid fa-compress" : "fa-solid fa-expand";
 
     public double InnerControlBarOpacity => IsPointerOverInnerBar && FullScreen ? 1 : 0;
+
+    public bool ControlBarEnable => IsPointerOverInnerBar && FullScreen ? true : false;
+    // public double InnerControlBarOpacity => 1;
 
     private bool _isPointerOverInnerBar = false;
 
