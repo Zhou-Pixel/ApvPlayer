@@ -56,13 +56,4 @@ public partial class VideoControl : UserControl
         }
     }
 
-    private void InputElement_OnPointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        Console.WriteLine("press mute");
-    }
-
-    private void InputElement_OnPointerEntered(object? sender, PointerEventArgs e)
-    {
-        Console.WriteLine("enter");
-    }
 }

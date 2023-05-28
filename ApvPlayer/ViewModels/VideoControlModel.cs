@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using ApvPlayer.Controls;
 using ApvPlayer.Errors;
 using ApvPlayer.EventArgs;
 using ApvPlayer.FFI.LibMpv;
@@ -16,23 +14,12 @@ using Avalonia.Data;
 using Avalonia.Platform.Storage;
 using DialogHostAvalonia;
 using ReactiveUI;
+using CheckBox = ApvPlayer.Controls.CheckBox;
 
 namespace ApvPlayer.ViewModels;
 
 public class VideoControlModel : ViewModelBase
 {
-
-    // private Mpv? _handle;
-    //
-    // public Mpv Handle
-    // {
-    //     set
-    //     {
-    //         value.MpvPropertyChanged += MpvPropertyChanged;
-    //         _handle = value;
-    //         _handle.ObserveProperty("idle-active", MpvFormat.MpvFormatFlag);
-    //     }
-    // }
 
 
     public event Action<object>? RequestUpdateGl;
@@ -40,7 +27,6 @@ public class VideoControlModel : ViewModelBase
 
     public event Func<object, FilePickerOpenOptions, Task<IReadOnlyList<IStorageFile>>>? RequestOpenFile;
 
-    // public required VideoControl Owner { private get; init; }
 
     private bool _playbackInitialized = false;
 
@@ -56,14 +42,19 @@ public class VideoControlModel : ViewModelBase
         Handle.MpvEventReceived += OnMpvEventReceived;
         
         this.WhenAnyValue(o => o.FullScreen)
-            .Subscribe(o =>
+            .Subscribe(_ =>
             {
+                this.RaisePropertyChanged(nameof(ControlBarEnable));
                 this.RaisePropertyChanged(nameof(InnerControlBarOpacity));
                 this.RaisePropertyChanged(nameof(FullScreenText));
             });
 
         this.WhenAnyValue(o => o.IsPointerOverInnerBar)
-            .Subscribe(_ => this.RaisePropertyChanged(nameof(InnerControlBarOpacity)));
+            .Subscribe(_ =>
+            {
+                this.RaisePropertyChanged(nameof(ControlBarEnable));
+                this.RaisePropertyChanged(nameof(InnerControlBarOpacity));
+            });
 
         this.WhenAnyValue(o => o.VideoDuration)
             .Subscribe(_ => this.RaisePropertyChanged(nameof(ProgressText)));
@@ -71,7 +62,7 @@ public class VideoControlModel : ViewModelBase
         this.WhenAnyValue(o => o.VideoValue)
             .Subscribe(_ => this.RaisePropertyChanged(nameof(ProgressText)));
 
-        this.WhenAnyValue(o => o.SubtitleTrack)
+        this.WhenAnyValue(o => o.SubtitleTracks)
             .Subscribe(_ => this.RaisePropertyChanged(nameof(SubtitleMenuItems)));
 
         AddSubtitleCommand = ReactiveCommand.Create(AddSubTitle);
@@ -187,7 +178,10 @@ public class VideoControlModel : ViewModelBase
 
     public double InnerControlBarOpacity => IsPointerOverInnerBar && FullScreen ? 1 : 0;
 
-    private bool _isPointerOverInnerBar = false;
+    public bool ControlBarEnable => IsPointerOverInnerBar && FullScreen;
+    // public double InnerControlBarOpacity => 1;
+
+    private bool _isPointerOverInnerBar;
 
     public bool IsPointerOverInnerBar
     {
@@ -217,43 +211,59 @@ public class VideoControlModel : ViewModelBase
     }
 
 
-    private Dictionary<long, string>? _videoTrack;
+    // private Dictionary<long, string?>? _videoTrack;
+    //
+    // public Dictionary<long, string?>? VideoTrack 
+    // {
+    //     set => this.RaiseAndSetIfChanged(ref _videoTrack, value);
+    //     get => _videoTrack; 
+    // }
+    //
+    // private Dictionary<long, string?>? _subtitleTrack;
+    //
+    // public Dictionary<long, string?>? SubtitleTrack
+    // {
+    //     set => this.RaiseAndSetIfChanged(ref _subtitleTrack, value);
+    //     get => _subtitleTrack;
+    // }
+    //
+    // private Dictionary<long, string?>? _audioTrack;
+    //
+    // public Dictionary<long, string?>? AudioTrack
+    // {
+    //     set => this.RaiseAndSetIfChanged(ref _audioTrack, value);
+    //     get => _audioTrack;
+    // }
 
-    public Dictionary<long, string>? VideoTrack 
+
+    private HashSet<Track> _subtitleTracks = new();
+    public HashSet<Track> SubtitleTracks
     {
-        set => this.RaiseAndSetIfChanged(ref _videoTrack, value);
-        get => _videoTrack; 
+        get => _subtitleTracks;
+        set => this.RaiseAndSetIfChanged(ref _subtitleTracks, value);
     }
 
-    private Dictionary<long, string>? _subtitleTrack;
+    
+    private HashSet<Track> _audioTracks = new();
+    public HashSet<Track> AudioTracks { get => _audioTracks; set => this.RaiseAndSetIfChanged(ref _audioTracks, value); }
 
-    public Dictionary<long, string>? SubtitleTrack
-    {
-        set => this.RaiseAndSetIfChanged(ref _subtitleTrack, value);
-        get => _subtitleTrack;
-    }
-
-    private Dictionary<long, string>? _audioTrack;
-
-    public Dictionary<long, string>? AudioTrack
-    {
-        set => this.RaiseAndSetIfChanged(ref _audioTrack, value);
-        get => _audioTrack;
-    }
-
-
-    public List<object> SubtitleMenuItems
+    
+    private HashSet<Track> _videoTracks = new();
+    public HashSet<Track> VideoTracks { get => _videoTracks; set => this.RaiseAndSetIfChanged(ref _videoTracks, value); }
+    
+    public List<MenuItem> SubtitleMenuItems
     {
         get
         {
-            var list = new List<object>();
+            var list = new List<MenuItem>();
+            var sub = TryGetCurrentSubtitleTrack();
             var addBinding = new Binding()
             {
                 Source = this,
                 Path = nameof(AddSubtitleCommand),
                 Mode = BindingMode.OneWay
             };
-            MenuItem addItem = new MenuItem()
+            MenuItem addItem = new MenuItem
             {
                 Header = "添加字幕",
             };
@@ -261,19 +271,19 @@ public class VideoControlModel : ViewModelBase
 
             list.Add(addItem);
 
-            if (SubtitleTrack == null) return list;
+            if (SubtitleTracks.Count == 0) return list;
 
-            foreach (var i in SubtitleTrack)
+            foreach (var i in SubtitleTracks)
             {
                 var item = new MenuItem()
                 {
-                    Header = i.Value,
+                    Header = i.Title ?? string.Empty,
                     Icon = new ApvPlayer.Controls.CheckBox()
                     {
                         CheckedIcon = "fa-solid fa-check",
                         UnCheckedIcon = "",
-                        IsChecked = false
-                    }
+                        IsChecked = sub == i.Id
+                    },
                 };
                 var subBinding = new Binding()
                 {
@@ -289,6 +299,7 @@ public class VideoControlModel : ViewModelBase
                 };
                 item.Bind(MenuItem.CommandParameterProperty, paraBinding);
                 list.Add(item);
+                i.Item = item;
             }
 
             return list;
@@ -325,6 +336,11 @@ public class VideoControlModel : ViewModelBase
         IsMute = !IsMute;
     }
     #endregion
+
+    #region Commands 
+
+    
+
     public async Task OpenLocalFileVideo()
     {
         if (RequestOpenFile == null)
@@ -414,7 +430,6 @@ public class VideoControlModel : ViewModelBase
         {
             case "duration":
                 VideoDuration = (double)arg.NewValue;
-                Console.WriteLine($"duration ==> {_videoDuration}");
                 break;
             case "time-pos":
             {
@@ -460,14 +475,53 @@ public class VideoControlModel : ViewModelBase
     }
 
 
-    public void SelectSubtitle(MenuItem item)
+    public void SelectSubtitle( MenuItem menu)
     {
-        
+        try
+        {
+
+            foreach (var i in SubtitleTracks)
+            {
+                // if (i.Item == null) continue;
+
+                bool check = false;
+                if (Equals(i.Item, menu))
+                {
+                    Handle.SetProperty("sid", i.Id);
+                    check = true;
+                    // if (i.Item.Icon is not CheckBox checkBox) continue;
+                }
+
+                if (i.Item?.Icon is CheckBox checkBox)
+                {
+                    checkBox.IsChecked = check;
+                }
+            }
+            
+            // Handle.SetProperty("sid", menu.Item1);
+            // long id = (long)Handle.GetProperty("sid");
+            // if (menu.Item2.Icon is not CheckBox checkbox) return;
+            // if (checkbox.IsChecked)
+            // {
+            //     Handle.CommandNode("sub-remove");
+            // }
+            // else
+            // {
+            //     SubtitleMenuItems.ForEach(i =>
+            //     {
+            //                        
+            //     });
+            // }
+        }
+        catch (MpvException e)
+        {
+            Console.WriteLine($"detail {e.Detail} {e.Message}");
+        }
     }
 
     public async Task AddSubTitle()
     {
-        if (!Active) return;
+        if (!Active) return; 
         if (RequestOpenFile == null) return;
         var openOptions = new FilePickerOpenOptions()
         {
@@ -490,7 +544,17 @@ public class VideoControlModel : ViewModelBase
         {
             file = @"\\?\" + file;
         }
+
         var node = Handle.CommandNode("sub-add", file);
+        if (node != null)
+        {
+            var no = MpvNode.FromObject(node);
+            Console.WriteLine($"format add sub ==> {no.Format}");
+        }
+        else
+        {
+            Console.WriteLine("sub add no ret");
+        }
         UpdateTracks();
     }
 
@@ -526,48 +590,57 @@ public class VideoControlModel : ViewModelBase
     {
         Handle.CommandNode("stop", "keep-playlist");
     }
+    #endregion
 
     private void UpdateTracks()
     {
-        var videoTrack = new Dictionary<long, string>();
-        var subtitleTrack = new Dictionary<long, string>();
-        var audioTrack = new Dictionary<long, string>();
+        var videoTrack =    new HashSet<Track>();
+        var subtitleTrack = new HashSet<Track>();
+        var audioTrack =    new HashSet<Track>();
         long count = (long)Handle.GetProperty("track-list/count");
-        Console.WriteLine($"count ==> {count}");
         for (int i = 0; i < count; i++)
         {
             try
             {
 
-                string type = (string)Handle.GetProperty($"track-list/{i}/type");
-                long id = (long)Handle.GetProperty($"track-list/{i}/id");
-                string title = (string)Handle.GetProperty($"track-list/{i}/title");
-                switch (type)
+                var track = new Track()
+                {
+                    Id = (long)Handle.GetProperty($"track-list/{i}/id"),
+                    Type = (string)Handle.GetProperty($"track-list/{i}/type"),
+                    Title = (string?)Handle.TryGetProperty($"track-list/{i}/title")
+                };
+                switch (track.Type)
                 {
                     case "video":
-                        videoTrack.Add(id, title);
+                        videoTrack.Add(track);
                         break;
                     case "audio":
-                        audioTrack.Add(id, title);
+                        audioTrack.Add(track);
                         break;
                     case "sub":
-                        subtitleTrack.Add(id, title);
+                        subtitleTrack.Add(track);
                         break;
                     default:
                         throw new NotImplementedException();
                 }
             }
-            catch (MpvException)
+            catch (MpvException e)
             {
-                Console.WriteLine($"invalid error");
+                Console.WriteLine($"invalid error  detail: {e.Detail} msg: {e.Message}");
             }
         }
 
-        VideoTrack = videoTrack;
-        AudioTrack = audioTrack;
-        SubtitleTrack = subtitleTrack;
+        VideoTracks = videoTrack;
+        AudioTracks = audioTrack;
+        SubtitleTracks = subtitleTrack;
     }
 
+
+    private long? TryGetCurrentSubtitleTrack()
+    {
+        return (long?)Handle.TryGetProperty("current-tracks/sub/id");
+    }
+    
     //private void RaiseMpvPropertyChanged(string mpvPropertyName)
     //{
     //    foreach (var info in this.GetType().GetProperties())
@@ -576,7 +649,7 @@ public class VideoControlModel : ViewModelBase
     //        {
     //            if (attribute is not MpvPropertyAttribute mpvAttribute) continue;
     //            if (mpvAttribute.MpvPropertyName != mpvPropertyName) continue;
-                
+
     //            return;
     //        }
     //    }
@@ -600,5 +673,5 @@ public class VideoControlModel : ViewModelBase
     //    field.SetValue(this, value);
     //    return true;
     //}
-    
+
 }

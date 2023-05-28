@@ -47,9 +47,11 @@ public class CheckBox : UserControl
 
     private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
-        if (e.Property.Name is nameof(IsChecked))
+        ((Icon)Content!).Value = e.Property.Name switch
         {
-            ((Icon)Content!).Value = (bool)e.NewValue! ? CheckedIcon : UnCheckedIcon;
-        }
+            nameof(IsChecked) => (bool)e.NewValue! ? CheckedIcon : UnCheckedIcon,
+            nameof(UnCheckedIcon) or nameof(CheckedIcon) => IsChecked ? CheckedIcon : UnCheckedIcon,
+            _ => ((Icon)Content!).Value
+        };
     }
 }
