@@ -245,7 +245,6 @@ public struct MpvNode
                 return null;
                 
         }
-        Console.WriteLine($"format ==> {Format} {ret}");
         return ret;
     }
 }

@@ -9,6 +9,8 @@ public class MpvException : Exception
     public MpvError Error => (MpvError)Code;
     public int Code { get; }
 
+    public object? Detail;
+
     public override string Message { get; }
 
     public MpvException(int code)

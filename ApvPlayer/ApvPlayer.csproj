@@ -2,15 +2,21 @@
   <PropertyGroup>
 	  <OutputType>Exe</OutputType>
 	  <TargetFramework>net7.0</TargetFramework>
-	  <Nullable>annotations</Nullable>
+	  <Nullable>enable</Nullable>
 	  <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 	  <ApplicationManifest>app.manifest</ApplicationManifest>
 	  <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaXaml Remove="Models\**" />
+    <Compile Remove="Models\**" />
+    <EmbeddedResource Remove="Models\**" />
+    <None Remove="Models\**" />
   </ItemGroup>
 
 

@@ -124,8 +124,24 @@ public class Mpv
                         
                         break;
                     }
+                    case MpvEventId.MpvEventNone:
+                    case MpvEventId.MpvEventShutdown:
+                    case MpvEventId.MpvEventLogMessage:
+                    case MpvEventId.MpvEventGetPropertyReply:
+                    case MpvEventId.MpvEventSetPropertyReply:
+                    case MpvEventId.MpvEventCommandReply:
+                    case MpvEventId.MpvEventStartFile:
+                    case MpvEventId.MpvEventFileLoaded:
+                    case MpvEventId.MpvEventIdle:
+                    case MpvEventId.MpvEventTick:
+                    case MpvEventId.MpvEventClientMessage:
+                    case MpvEventId.MpvEventVideoReconfig:
+                    case MpvEventId.MpvEventAudioReconfig:
+                    case MpvEventId.MpvEventSeek:
+                    case MpvEventId.MpvEventPlaybackRestart:
+                    case MpvEventId.MpvEventQueueOverflow:
+                    case MpvEventId.MpvEventHook:
                     default:
-                        Console.WriteLine(evt.EventId);
                         break;
                 }
             }
@@ -268,20 +284,29 @@ public class Mpv
         Marshal.StructureToPtr(node, nodePtr, true);
 
         var outPtr = Marshal.AllocHGlobal(Marshal.SizeOf<MpvNode>());
-        int code = MpvFunctions.CommandNode(_mpvHandle, nodePtr, outPtr);
-        var outNode = Marshal.PtrToStructure<MpvNode>(outPtr);
-
-        node.Free();
-
-        object? ret = outNode.ToObject();
-        Marshal.FreeHGlobal(nodePtr);
-        Marshal.FreeHGlobal(outPtr);
-        if (code != 0)
+        try
         {
-            throw new MpvException(code);
+
+            int code = MpvFunctions.CommandNode(_mpvHandle, nodePtr, outPtr);
+            var outNode = Marshal.PtrToStructure<MpvNode>(outPtr);
+
+            node.Free();
+
+            object? ret = outNode.ToObject();
+            if (code != 0)
+            {
+                throw new MpvException(code);
+            }
+            MpvFunctions.FreeNodeContents(outPtr);
+            return ret;
+        }
+        finally
+        {
+            
+            Marshal.FreeHGlobal(nodePtr);
+            Marshal.FreeHGlobal(outPtr);
         }
 
-        return ret;
     }
 
     public object? CommandNode(params object[] cmd)
@@ -475,6 +500,18 @@ public class Mpv
         
     }
 
+    public object? TryGetProperty(string name)
+    {
+        try
+        {
+            return GetProperty(name);
+        }
+        catch (MpvException)
+        {
+            return null;
+        }
+    }
+    
     public object GetProperty(string name)
     {
         var namePtr = Marshal.StringToCoTaskMemUTF8(name);
@@ -485,7 +522,10 @@ public class Mpv
         if (code != 0)
         {
             Marshal.FreeHGlobal(nodePtr);
-            throw new MpvException(code);
+            throw new MpvException(code)
+            {
+                Detail = name
+            };
         }
 
         var ret = Marshal.PtrToStructure<MpvNode>(nodePtr).ToObject();

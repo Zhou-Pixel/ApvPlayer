@@ -48,6 +48,7 @@ public sealed class OpenGlControl : OpenGlControlBase, ICustomHitTest
     protected override void OnOpenGlInit(GlInterface gl)
     {
         
+        // bug due to avalonia https://github.com/AvaloniaUI/Avalonia/issues/10371
         if (!_first)
         {
             Console.WriteLine("init twice");
