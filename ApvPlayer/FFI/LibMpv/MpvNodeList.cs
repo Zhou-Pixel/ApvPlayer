@@ -3,7 +3,7 @@
 namespace ApvPlayer.FFI.LibMpv;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct MpvNodeList
+public struct NodeList
 {
  /**
          * Number of entries. Negative values are not allowed.

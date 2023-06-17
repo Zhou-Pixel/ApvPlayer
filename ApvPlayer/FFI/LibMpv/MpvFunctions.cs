@@ -40,23 +40,23 @@ public class MpvFunctions
 
         _libraryLoader.LoadDynamicLibrary(_mpvLibraryPath);
         
-        Create = GetDelegate<MpvCreate>("mpv_create");
-        Initialize = GetDelegate<MpvInitialize>("mpv_initialize");
-        SetOptionString = GetDelegate<MpvSetOptionString>("mpv_set_option_string");
-        SetWakeupCallback = GetDelegate<MpvSetWakeupCallback>("mpv_set_wakeup_callback");
-        WaitEvent = GetDelegate<MpvWaitEvent>("mpv_wait_event");
-        RenderContextCreate = GetDelegate<MpvRenderContextCreate>("mpv_render_context_create");
-        RenderContextSetUpdateCallback = GetDelegate<MpvRenderContextSetUpdateCallback>("mpv_render_context_set_update_callback");
-        RenderContextRender = GetDelegate<MpvRenderContextRender>("mpv_render_context_render");
-        CommandNode = GetDelegate<MpvCommandNode>("mpv_command_node");
-        Command = GetDelegate<MpvCommand>("mpv_command");
-        ErrorString = GetDelegate<MpvErrorString>("mpv_error_string");
-        RenderContextFree = GetDelegate<MpvRenderContextFree>("mpv_render_context_free");
-        TerminateDestroy = GetDelegate<MpvTerminateDestroy>("mpv_terminate_destroy");
-        ObserveProperty = GetDelegate<MpvObserveProperty>("mpv_observe_property");
-        GetProperty = GetDelegate<MpvGetProperty>("mpv_get_property");
-        FreeNodeContents = GetDelegate<MpvFreeNodeContents>("mpv_free_node_contents");
-        SetProperty = GetDelegate<MpvSetProperty>("mpv_set_property");
+        Create = GetDelegate<Create>("mpv_create");
+        Initialize = GetDelegate<Initialize>("mpv_initialize");
+        SetOptionString = GetDelegate<SetOptionString>("mpv_set_option_string");
+        SetWakeupCallback = GetDelegate<SetWakeupCallback>("mpv_set_wakeup_callback");
+        WaitEvent = GetDelegate<WaitEvent>("mpv_wait_event");
+        RenderContextCreate = GetDelegate<RenderContextCreate>("mpv_render_context_create");
+        RenderContextSetUpdateCallback = GetDelegate<RenderContextSetUpdateCallback>("mpv_render_context_set_update_callback");
+        RenderContextRender = GetDelegate<RenderContextRender>("mpv_render_context_render");
+        CommandNode = GetDelegate<CommandNode>("mpv_command_node");
+        Command = GetDelegate<Command>("mpv_command");
+        ErrorString = GetDelegate<ErrorString>("mpv_error_string");
+        RenderContextFree = GetDelegate<RenderContextFree>("mpv_render_context_free");
+        TerminateDestroy = GetDelegate<TerminateDestroy>("mpv_terminate_destroy");
+        ObserveProperty = GetDelegate<ObserveProperty>("mpv_observe_property");
+        GetProperty = GetDelegate<GetProperty>("mpv_get_property");
+        FreeNodeContents = GetDelegate<FreeNodeContents>("mpv_free_node_contents");
+        SetProperty = GetDelegate<SetProperty>("mpv_set_property");
     }
 
     ~MpvFunctions()
@@ -69,49 +69,49 @@ public class MpvFunctions
         return Marshal.GetDelegateForFunctionPointer<TDelegate>(_libraryLoader.GetProcAddress(path));
     }
 
-    public MpvCreate Create { get; }
+    public Create Create { get; }
 
     // int mpv_initialize(mpv_handle *ctx);
-    public MpvInitialize Initialize { get; }
+    public Initialize Initialize { get; }
     
     // int mpv_set_option_string(mpv_handle *ctx, const char *name, const char *data);
-    public MpvSetOptionString SetOptionString { get; }
+    public SetOptionString SetOptionString { get; }
 
     // void mpv_set_wakeup_callback(mpv_handle *ctx, void (*cb)(void *d), void *d);
-    public MpvSetWakeupCallback SetWakeupCallback { get; }
+    public SetWakeupCallback SetWakeupCallback { get; }
 
     // mpv_event *mpv_wait_event(mpv_handle *ctx, double timeout);
-    public MpvWaitEvent WaitEvent { get; }
+    public WaitEvent WaitEvent { get; }
 
     // int mpv_render_context_create(mpv_render_context **res, mpv_handle *mpv, mpv_render_param *params);
-    public MpvRenderContextCreate RenderContextCreate { get; }
+    public RenderContextCreate RenderContextCreate { get; }
 
 
     // void mpv_render_context_set_update_callback(mpv_render_context *ctx, mpv_render_update_fn callback, void *callback_ctx);
-    public MpvRenderContextSetUpdateCallback RenderContextSetUpdateCallback { get; }
+    public RenderContextSetUpdateCallback RenderContextSetUpdateCallback { get; }
 
     // int mpv_render_context_render(mpv_render_context *ctx, mpv_render_param *params);
-    public MpvRenderContextRender RenderContextRender { get; }
+    public RenderContextRender RenderContextRender { get; }
 
     // int mpv_command_node(mpv_handle *ctx, mpv_node *args, mpv_node *result);
-    public MpvCommandNode CommandNode { get; }
+    public CommandNode CommandNode { get; }
 
-    public MpvCommand Command { get; }
+    public Command Command { get; }
     
     //const char *mpv_error_string(int error);
-    public MpvErrorString ErrorString { get; }
+    public ErrorString ErrorString { get; }
     
-    public MpvRenderContextFree RenderContextFree { get; }
+    public RenderContextFree RenderContextFree { get; }
     
-    public MpvTerminateDestroy TerminateDestroy { get; }
+    public TerminateDestroy TerminateDestroy { get; }
     
-    public MpvObserveProperty ObserveProperty { get; }
+    public ObserveProperty ObserveProperty { get; }
     
-    public MpvGetProperty GetProperty { get; }
+    public GetProperty GetProperty { get; }
     
-    public MpvFreeNodeContents FreeNodeContents { get; }
+    public FreeNodeContents FreeNodeContents { get; }
     
     
-    public MpvSetProperty SetProperty { get; }
+    public SetProperty SetProperty { get; }
      
 }

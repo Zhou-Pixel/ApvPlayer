@@ -1,11 +1,11 @@
 ﻿namespace ApvPlayer.FFI.LibMpv;
 
-public enum MpvEventId
+public enum EventId
 {
     /**
  * Nothing happened. Happens on timeouts or sporadic wakeups.
  */
-    MpvEventNone = 0,
+    None = 0,
 
     /**
      * Happens when the player quits. The player enters a state where it tries
@@ -13,48 +13,48 @@ public enum MpvEventId
      * the client should react to this and quit with mpv_destroy() as soon as
      * possible.
      */
-    MpvEventShutdown = 1,
+    Shutdown = 1,
 
     /**
      * See mpv_request_log_messages().
      */
-    MpvEventLogMessage = 2,
+    LogMessage = 2,
 
     /**
      * Reply to a mpv_get_property_async() request.
      * See also mpv_event and mpv_event_property.
      */
-    MpvEventGetPropertyReply = 3,
+    PropertyReply = 3,
 
     /**
      * Reply to a mpv_set_property_async() request.
      * (Unlike MPV_EVENT_GET_PROPERTY, mpv_event_property is not used.)
      */
-    MpvEventSetPropertyReply = 4,
+    SetPropertyReply = 4,
 
     /**
      * Reply to a mpv_command_async() or mpv_command_node_async() request.
      * See also mpv_event and mpv_event_command.
      */
-    MpvEventCommandReply = 5,
+    CommandReply = 5,
 
     /**
      * Notification before playback start of a file (before the file is loaded).
      * See also mpv_event and mpv_event_start_file.
      */
-    MpvEventStartFile = 6,
+    StartFile = 6,
 
     /**
      * Notification after playback end (after the file was unloaded).
      * See also mpv_event and mpv_event_end_file.
      */
-    MpvEventEndFile = 7,
+    EndFile = 7,
 
     /**
      * Notification when the file has been loaded (headers were read etc.), and
      * decoding starts.
      */
-    MpvEventFileLoaded = 8,
+    FileLoaded = 8,
 
     /**
      * Idle mode was entered. In this mode, no file is played, and the playback
@@ -68,7 +68,7 @@ public enum MpvEventId
      *             is not necessarily sent at the right point anymore (at the
      *             start of the program), while the property behaves correctly.
      */
-    MpvEventIdle = 11,
+    Idle = 11,
 
     /**
      * Sent every time after a video frame is displayed. Note that currently,
@@ -79,7 +79,7 @@ public enum MpvEventId
      * @deprecated Use mpv_observe_property() with relevant properties instead
      *             (such as "playback-time").
      */
-    MpvEventTick = 14,
+    Tick = 14,
 
     /**
      * Triggered by the script-message input command. The command uses the
@@ -88,7 +88,7 @@ public enum MpvEventId
      * second argument as strings.
      * See also mpv_event and mpv_event_client_message.
      */
-    MpvEventClientMessage = 16,
+    Message = 16,
 
     /**
      * Happens after video changed in some way. This can happen on resolution
@@ -100,19 +100,19 @@ public enum MpvEventId
      * yourself whether the video parameters really changed before doing
      * something expensive.
      */
-    MpvEventVideoReconfig = 17,
+    VideoReconfig = 17,
 
     /**
      * Similar to MPV_EVENT_VIDEO_RECONFIG. This is relatively uninteresting,
      * because there is no such thing as audio output embedding.
      */
-    MpvEventAudioReconfig = 18,
+    AudioReconfig = 18,
 
     /**
      * Happens when a seek was initiated. Playback stops. Usually it will
      * resume with MPV_EVENT_PLAYBACK_RESTART as soon as the seek is finished.
      */
-    MpvEventSeek = 20,
+    Seek = 20,
 
     /**
      * There was a discontinuity of some sort (like a seek), and playback
@@ -120,13 +120,13 @@ public enum MpvEventId
      * seeking. The main purpose is allowing the client to detect when a seek
      * request is finished.
      */
-    MpvEventPlaybackRestart = 21,
+    PlaybackRestart = 21,
 
     /**
      * Event sent due to mpv_observe_property().
      * See also mpv_event and mpv_event_property.
      */
-    MpvEventPropertyChange = 22,
+    PropertyChange = 22,
 
     /**
      * Happens if the internal per-mpv_handle ringbuffer overflows, and at
@@ -137,7 +137,7 @@ public enum MpvEventId
      * Event delivery will continue normally once this event was returned
      * (this forces the client to empty the queue completely).
      */
-    MpvEventQueueOverflow = 24,
+    QueueOverflow = 24,
 
     /**
      * Triggered if a hook handler was registered with mpv_hook_add(), and the
@@ -145,5 +145,5 @@ public enum MpvEventId
      * the hook with mpv_hook_continue().
      * See also mpv_event and mpv_event_hook.
      */
-    MpvEventHook = 25,
+    Hook = 25,
 }

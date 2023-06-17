@@ -1,13 +1,13 @@
 ﻿namespace ApvPlayer.FFI.LibMpv;
 
-public enum MpvFormat
+public enum Format
 {
     /**
  * Invalid. Sometimes used for empty values. This is always defined to 0,
  * so a normal 0-init of mpv_format (or e.g. mpv_node) is guaranteed to set
  * this it to MPV_FORMAT_NONE (which makes some things saner as consequence).
  */
-    MpvFormatNone = 0,
+    None = 0,
     /**
      * The basic type is char*. It returns the raw property string, like
      * using ${=property} in input.conf (see input.rst).
@@ -43,7 +43,7 @@ public enum MpvFormat
      * Or just use mpv_set_property_string().
      *
      */
-    MpvFormatString = 1,
+    String = 1,
     /**
      * The basic type is char*. It returns the OSD property string, like
      * using ${property} in input.conf (see input.rst). In many cases, this
@@ -53,7 +53,7 @@ public enum MpvFormat
      *
      * Only valid when doing read access. The rest works like MPV_FORMAT_STRING.
      */
-    MpvFormatOsdString = 2,
+    OsdString = 2,
     /**
      * The basic type is int. The only allowed values are 0 ("no")
      * and 1 ("yes").
@@ -70,15 +70,15 @@ public enum MpvFormat
      *     int flag = 1;
      *     mpv_set_property(ctx, "property", MPV_FORMAT_FLAG, &flag);
      */
-    MpvFormatFlag = 3,
+    Flag = 3,
     /**
      * The basic type is int64_t.
      */
-    MpvFormatInt64 = 4,
+    Int64 = 4,
     /**
      * The basic type is double.
      */
-    MpvFormatDouble = 5,
+    Double = 5,
     /**
      * The type is mpv_node.
      *
@@ -111,18 +111,18 @@ public enum MpvFormat
      *     value.u.string = "hello";
      *     mpv_set_property(ctx, "property", MPV_FORMAT_NODE, &value);
      */
-    MpvFormatNode = 6,
+    Node = 6,
     /**
      * Used with mpv_node only. Can usually not be used directly.
      */
-    MpvFormatNodeArray = 7,
+    NodeArray = 7,
     /**
      * See MPV_FORMAT_NODE_ARRAY.
      */
-    MpvFormatNodeMap = 8,
+    NodeMap = 8,
     /**
      * A raw, untyped byte array. Only used only with mpv_node, and only in
      * some very specific situations. (Some commands use it.)
      */
-    MpvFormatByteArray = 9
+    ByteArray = 9
 }

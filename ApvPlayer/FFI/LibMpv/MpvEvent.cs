@@ -9,7 +9,7 @@ public struct MpvEvent
          * One of mpv_event. Keep in mind that later ABI compatible releases might
          * add new event types. These should be ignored by the API user.
          */
-    public MpvEventId EventId;
+    public EventId EventId;
 
     /**
          * This is mainly used for events that are replies to (asynchronous)

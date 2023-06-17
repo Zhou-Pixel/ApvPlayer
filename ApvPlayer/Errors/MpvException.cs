@@ -6,7 +6,7 @@ namespace ApvPlayer.Errors;
 
 public class MpvException : Exception
 {
-    public MpvError Error => (MpvError)Code;
+    public Error Error => (Error)Code;
     public int Code { get; }
 
     public object? Detail;

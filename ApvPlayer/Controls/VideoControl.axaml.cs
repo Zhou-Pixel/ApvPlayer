@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ApvPlayer.ViewModels;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
@@ -11,6 +12,16 @@ namespace ApvPlayer.Controls;
 
 public partial class VideoControl : UserControl
 {
+
+    public static readonly StyledProperty<string?> FileNameProperty = AvaloniaProperty.Register<VideoControl, string?>(
+        "FileName");
+
+    public string? FileName
+    {
+        get => GetValue(FileNameProperty);
+        set => SetValue(FileNameProperty, value);
+    }
+
     private WindowState _windowState = WindowState.Normal;
 
     public VideoControl()

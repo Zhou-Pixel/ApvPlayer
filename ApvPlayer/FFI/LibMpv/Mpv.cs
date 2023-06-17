@@ -15,8 +15,8 @@ public class Mpv
     private static readonly MpvFunctions MpvFunctions = MpvFunctions.Instance;
     private readonly nint _mpvHandle = MpvFunctions.Create();
     private nint _mpvrender = nint.Zero;
-    private MpvRenderContextUpdateCallback? _renderContextUpdateCallback;
-    private MpvWakeupCallback _mpvWakeupCallback;
+    private RenderContextUpdateCallback? _renderContextUpdateCallback;
+    private WakeupCallback _mpvWakeupCallback;
     private MpvGetProcAddressCallback? _mpvGetProcAddressCallback;
 
     private readonly Dictionary<string, object?> _valueCache = new();
@@ -28,8 +28,8 @@ public class Mpv
 
         SetOptionString("terminal", "no");
         Initialize();
-        ObserveProperty("duration", MpvFormat.MpvFormatDouble);
-        ObserveProperty("time-pos", MpvFormat.MpvFormatDouble);
+        ObserveProperty("duration", Format.Double);
+        ObserveProperty("time-pos", Format.Double);
         SetWakeupCallback(_mpvWakeupCallback, nint.Zero);
     }
 
@@ -55,16 +55,16 @@ public class Mpv
                 {
                     MpvEventReceived?.Invoke(this, new MpvEventReceivedArgs(evt));
                 });
-                if (evt.EventId == MpvEventId.MpvEventNone)
+                if (evt.EventId == EventId.None)
                 {
                     break;
                 }
 
                 switch (evt.EventId)
                 {
-                    case MpvEventId.MpvEventPropertyChange:
+                    case EventId.PropertyChange:
                     {
-                        MpvEventProperty prop = Marshal.PtrToStructure<MpvEventProperty>(evt.Data);
+                        EventProperty prop = Marshal.PtrToStructure<EventProperty>(evt.Data);
                         string name = Marshal.PtrToStringAnsi(prop.Name) ?? string.Empty;
                         var data = prop.TakeData();
                         if (data == null)
@@ -119,28 +119,28 @@ public class Mpv
                         //}
                         break;
                     }
-                    case MpvEventId.MpvEventEndFile:
+                    case EventId.EndFile:
                     {
                         
                         break;
                     }
-                    case MpvEventId.MpvEventNone:
-                    case MpvEventId.MpvEventShutdown:
-                    case MpvEventId.MpvEventLogMessage:
-                    case MpvEventId.MpvEventGetPropertyReply:
-                    case MpvEventId.MpvEventSetPropertyReply:
-                    case MpvEventId.MpvEventCommandReply:
-                    case MpvEventId.MpvEventStartFile:
-                    case MpvEventId.MpvEventFileLoaded:
-                    case MpvEventId.MpvEventIdle:
-                    case MpvEventId.MpvEventTick:
-                    case MpvEventId.MpvEventClientMessage:
-                    case MpvEventId.MpvEventVideoReconfig:
-                    case MpvEventId.MpvEventAudioReconfig:
-                    case MpvEventId.MpvEventSeek:
-                    case MpvEventId.MpvEventPlaybackRestart:
-                    case MpvEventId.MpvEventQueueOverflow:
-                    case MpvEventId.MpvEventHook:
+                    case EventId.None:
+                    case EventId.Shutdown:
+                    case EventId.LogMessage:
+                    case EventId.PropertyReply:
+                    case EventId.SetPropertyReply:
+                    case EventId.CommandReply:
+                    case EventId.StartFile:
+                    case EventId.FileLoaded:
+                    case EventId.Idle:
+                    case EventId.Tick:
+                    case EventId.Message:
+                    case EventId.VideoReconfig:
+                    case EventId.AudioReconfig:
+                    case EventId.Seek:
+                    case EventId.PlaybackRestart:
+                    case EventId.QueueOverflow:
+                    case EventId.Hook:
                     default:
                         break;
                 }
@@ -176,7 +176,7 @@ public class Mpv
         
     }
 
-    public void SetWakeupCallback(MpvWakeupCallback cb, nint data)
+    public void SetWakeupCallback(WakeupCallback cb, nint data)
     {
         _mpvWakeupCallback = cb;
         MpvFunctions.SetWakeupCallback(_mpvHandle, _mpvWakeupCallback, data);
@@ -319,11 +319,11 @@ public class Mpv
         return Marshal.PtrToStructure<MpvEvent>(ptr);
     }
 
-    public void RenderContextCreate(Dictionary<MpvRenderParamType, object> parameters)
+    public void RenderContextCreate(Dictionary<RenderParamType, object> parameters)
     {
         
         List<nint> toBeFree = new List<nint>();
-        var paraArray = new MpvRenderParam[parameters.Count + 1];
+        var paraArray = new RenderParam[parameters.Count + 1];
 
         int i = 0;
 
@@ -338,43 +338,43 @@ public class Mpv
             nint data;
             switch (item.Key)
             {
-                case MpvRenderParamType.MpvRenderParamApiType:
+                case RenderParamType.ApiType:
                     data = Marshal.StringToHGlobalAnsi((string)item.Value);
                     toBeFree.Add(data);
                     break;
-                case MpvRenderParamType.MpvRenderParamInvalid:
+                case RenderParamType.Invalid:
                     data = nint.Zero;
                     break;
-                case MpvRenderParamType.MpvRenderParamFlipY:
+                case RenderParamType.FlipY:
                     data = Marshal.AllocHGlobal(sizeof(int));
                     Marshal.WriteInt32(data, 1);
                     toBeFree.Add(data);
                     break;
-                case MpvRenderParamType.MpvRenderParamOpenglInitParams:
-                    var openglPara = (MpvOpenglInitParams)item.Value;
+                case RenderParamType.OpenglInitParams:
+                    var openglPara = (OpenglInitParams)item.Value;
                     _mpvGetProcAddressCallback = openglPara.MpvGetProcAddress;
                     openglPara.MpvGetProcAddress = _mpvGetProcAddressCallback;
-                    data = Marshal.AllocHGlobal(Marshal.SizeOf<MpvOpenglInitParams>());
+                    data = Marshal.AllocHGlobal(Marshal.SizeOf<OpenglInitParams>());
                     Marshal.StructureToPtr(openglPara, data, true);
                     toBeFree.Add(data);
                     break;
-                case MpvRenderParamType.MpvRenderParamOpenglFbo:
-                case MpvRenderParamType.MpvRenderParamDepth:
-                case MpvRenderParamType.MpvRenderParamIccProfile:
-                case MpvRenderParamType.MpvRenderParamAmbientLight:
-                case MpvRenderParamType.MpvRenderParamX11Display:
-                case MpvRenderParamType.MpvRenderParamWlDisplay:
-                case MpvRenderParamType.MpvRenderParamAdvancedControl:
-                case MpvRenderParamType.MpvRenderParamNextFrameInfo:
-                case MpvRenderParamType.MpvRenderParamBlockForTargetTime:
-                case MpvRenderParamType.MpvRenderParamSkipRendering:
-                case MpvRenderParamType.MpvRenderParamDrmDisplay:
-                case MpvRenderParamType.MpvRenderParamDrmDrawSurfaceSize:
-                case MpvRenderParamType.MpvRenderParamDrmDisplayV2:
-                case MpvRenderParamType.MpvRenderParamSwSize:
-                case MpvRenderParamType.MpvRenderParamSwFormat:
-                case MpvRenderParamType.MpvRenderParamSwStride:
-                case MpvRenderParamType.MpvRenderParamSwPointer:
+                case RenderParamType.OpenglFbo:
+                case RenderParamType.Depth:
+                case RenderParamType.IccProfile:
+                case RenderParamType.AmbientLight:
+                case RenderParamType.X11Display:
+                case RenderParamType.WlDisplay:
+                case RenderParamType.AdvancedControl:
+                case RenderParamType.NextFrameInfo:
+                case RenderParamType.BlockForTargetTime:
+                case RenderParamType.SkipRendering:
+                case RenderParamType.DrmDisplay:
+                case RenderParamType.DrmDrawSurfaceSize:
+                case RenderParamType.DrmDisplayV2:
+                case RenderParamType.SwSize:
+                case RenderParamType.SwFormat:
+                case RenderParamType.SwStride:
+                case RenderParamType.SwPointer:
                 default:
                     throw new NotImplementedException("current api is not support try to use FFI.MpvFunction");
             }
@@ -385,7 +385,7 @@ public class Mpv
         }
 
         paraArray[i].Data = nint.Zero;
-        paraArray[i].Type = MpvRenderParamType.MpvRenderParamInvalid;
+        paraArray[i].Type = RenderParamType.Invalid;
         
         var outptr = new nint [1];
         int code = MpvFunctions.RenderContextCreate(Marshal.UnsafeAddrOfPinnedArrayElement(outptr, 0), _mpvHandle, Marshal.UnsafeAddrOfPinnedArrayElement(paraArray, 0));
@@ -399,20 +399,20 @@ public class Mpv
         _mpvrender = outptr[0];
     }
 
-    public void RenderContextSetUpdateCallback(MpvRenderContextUpdateCallback callback, nint data)
+    public void RenderContextSetUpdateCallback(RenderContextUpdateCallback callback, nint data)
     {
         _renderContextUpdateCallback = callback;
         // MpvFunctions.RenderContextSetUpdateCallback(_mpvrender, Marshal.GetFunctionPointerForDelegate(_renderContextUpdateCallback), data);
         MpvFunctions.RenderContextSetUpdateCallback(_mpvrender, _renderContextUpdateCallback, data);
     }
 
-    public void RenderContextRender(Dictionary<MpvRenderParamType, object> parameters)
+    public void RenderContextRender(Dictionary<RenderParamType, object> parameters)
     { 
         var toBeFree = new List<nint>
         {
             Capacity = 0
         };
-        var paraArray = new MpvRenderParam[parameters.Count + 1];
+        var paraArray = new RenderParam[parameters.Count + 1];
 
         int i = 0;
 
@@ -427,46 +427,46 @@ public class Mpv
             nint data;
             switch (item.Key)
             {
-                case MpvRenderParamType.MpvRenderParamApiType:
+                case RenderParamType.ApiType:
                     data = Marshal.StringToHGlobalAnsi((string)item.Value);
                     toBeFree.Add(data);
                     break;
-                case MpvRenderParamType.MpvRenderParamInvalid:
+                case RenderParamType.Invalid:
                     data = nint.Zero;
                     break;
-                case MpvRenderParamType.MpvRenderParamFlipY:
+                case RenderParamType.FlipY:
                     data = Marshal.AllocHGlobal(sizeof(int));
                     Marshal.WriteInt32(data, 1);
                     toBeFree.Add(data);
                     break;
-                case MpvRenderParamType.MpvRenderParamOpenglInitParams:
-                    var openglPara = (MpvOpenglInitParams)item.Value;
-                    data = Marshal.AllocHGlobal(Marshal.SizeOf<MpvOpenglInitParams>());
+                case RenderParamType.OpenglInitParams:
+                    var openglPara = (OpenglInitParams)item.Value;
+                    data = Marshal.AllocHGlobal(Marshal.SizeOf<OpenglInitParams>());
                     Marshal.StructureToPtr(openglPara, data, true);
                     toBeFree.Add(data);
                     break;
-                case MpvRenderParamType.MpvRenderParamOpenglFbo:
-                    var openglFbo = (MpvOpenglFbo)item.Value;
-                    data = Marshal.AllocHGlobal(Marshal.SizeOf<MpvOpenglFbo>());
+                case RenderParamType.OpenglFbo:
+                    var openglFbo = (OpenglFbo)item.Value;
+                    data = Marshal.AllocHGlobal(Marshal.SizeOf<OpenglFbo>());
                     Marshal.StructureToPtr(openglFbo, data, true);
                     toBeFree.Add(data);
                     break;
-                case MpvRenderParamType.MpvRenderParamDepth:
-                case MpvRenderParamType.MpvRenderParamIccProfile:
-                case MpvRenderParamType.MpvRenderParamAmbientLight:
-                case MpvRenderParamType.MpvRenderParamX11Display:
-                case MpvRenderParamType.MpvRenderParamWlDisplay:
-                case MpvRenderParamType.MpvRenderParamAdvancedControl:
-                case MpvRenderParamType.MpvRenderParamNextFrameInfo:
-                case MpvRenderParamType.MpvRenderParamBlockForTargetTime:
-                case MpvRenderParamType.MpvRenderParamSkipRendering:
-                case MpvRenderParamType.MpvRenderParamDrmDisplay:
-                case MpvRenderParamType.MpvRenderParamDrmDrawSurfaceSize:
-                case MpvRenderParamType.MpvRenderParamDrmDisplayV2:
-                case MpvRenderParamType.MpvRenderParamSwSize:
-                case MpvRenderParamType.MpvRenderParamSwFormat:
-                case MpvRenderParamType.MpvRenderParamSwStride:
-                case MpvRenderParamType.MpvRenderParamSwPointer:
+                case RenderParamType.Depth:
+                case RenderParamType.IccProfile:
+                case RenderParamType.AmbientLight:
+                case RenderParamType.X11Display:
+                case RenderParamType.WlDisplay:
+                case RenderParamType.AdvancedControl:
+                case RenderParamType.NextFrameInfo:
+                case RenderParamType.BlockForTargetTime:
+                case RenderParamType.SkipRendering:
+                case RenderParamType.DrmDisplay:
+                case RenderParamType.DrmDrawSurfaceSize:
+                case RenderParamType.DrmDisplayV2:
+                case RenderParamType.SwSize:
+                case RenderParamType.SwFormat:
+                case RenderParamType.SwStride:
+                case RenderParamType.SwPointer:
                 default:
                     throw new NotImplementedException("current api is not support try to use FFI.MpvFunction");
             }
@@ -477,7 +477,7 @@ public class Mpv
         }
 
         paraArray[i].Data = nint.Zero;
-        paraArray[i].Type = MpvRenderParamType.MpvRenderParamInvalid;
+        paraArray[i].Type = RenderParamType.Invalid;
 
         int code = MpvFunctions.RenderContextRender(_mpvrender, Marshal.UnsafeAddrOfPinnedArrayElement(paraArray, 0));
         Free(toBeFree);
@@ -488,7 +488,7 @@ public class Mpv
         
     }
 
-    public void ObserveProperty(string name, MpvFormat format)
+    public void ObserveProperty(string name, Format format)
     {
         nint namePtr = Marshal.StringToHGlobalAnsi(name);
         int code = MpvFunctions.ObserveProperty(_mpvHandle, 0, namePtr, format);
@@ -516,7 +516,7 @@ public class Mpv
     {
         var namePtr = Marshal.StringToCoTaskMemUTF8(name);
         var nodePtr = Marshal.AllocHGlobal(Marshal.SizeOf<MpvNode>());
-        int code = MpvFunctions.GetProperty(_mpvHandle, namePtr, MpvFormat.MpvFormatNode, nodePtr);
+        int code = MpvFunctions.GetProperty(_mpvHandle, namePtr, Format.Node, nodePtr);
         Marshal.FreeHGlobal(namePtr);
 
         if (code != 0)
@@ -540,7 +540,7 @@ public class Mpv
         var dataPtr = Marshal.AllocHGlobal(Marshal.SizeOf<MpvNode>());
         Marshal.StructureToPtr(node, dataPtr, true);
         var namePtr = Marshal.StringToHGlobalAnsi(name);
-        int code = MpvFunctions.SetProperty(_mpvHandle, namePtr, MpvFormat.MpvFormatNode, dataPtr);
+        int code = MpvFunctions.SetProperty(_mpvHandle, namePtr, Format.Node, dataPtr);
         node.Free();
         Marshal.FreeHGlobal(namePtr);
         if (code != 0)

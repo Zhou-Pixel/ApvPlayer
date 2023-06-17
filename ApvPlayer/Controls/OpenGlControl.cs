@@ -24,17 +24,17 @@ public sealed class OpenGlControl : OpenGlControlBase, ICustomHitTest
     protected override void OnOpenGlRender(GlInterface gl, int fb)
     {
         double scaling = VisualRoot?.RenderScaling ?? 1.0;
-        var fbo = new MpvOpenglFbo
+        var fbo = new OpenglFbo
         {
             Fbo = fb,
             W = (int)(Bounds.Width * scaling ),
             H = (int)(Bounds.Height * scaling ),
             InternalFormat = 0
         };
-        var parameters = new Dictionary<MpvRenderParamType, object>
+        var parameters = new Dictionary<RenderParamType, object>
         {
-            { MpvRenderParamType.MpvRenderParamOpenglFbo, fbo},
-            { MpvRenderParamType.MpvRenderParamFlipY, 1}
+            { RenderParamType.OpenglFbo, fbo},
+            { RenderParamType.FlipY, 1}
         };
         Handle.RenderContextRender(parameters);
     }
@@ -57,15 +57,15 @@ public sealed class OpenGlControl : OpenGlControlBase, ICustomHitTest
         
 
         _first = false;
-        MpvOpenglInitParams para = new()
+        OpenglInitParams para = new()
         {
             MpvGetProcAddress = (_, name) => gl.GetProcAddress(name)
         };
 
-        var parameters = new Dictionary<MpvRenderParamType, object>
+        var parameters = new Dictionary<RenderParamType, object>
         {
-            {MpvRenderParamType.MpvRenderParamApiType, "opengl"},
-            {MpvRenderParamType.MpvRenderParamOpenglInitParams, para},
+            {RenderParamType.ApiType, "opengl"},
+            {RenderParamType.OpenglInitParams, para},
         };
         Handle.RenderContextCreate(parameters);
         Handle.RenderContextSetUpdateCallback(UpdateGl, nint.Zero);

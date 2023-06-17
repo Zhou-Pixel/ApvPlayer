@@ -3,7 +3,7 @@
 namespace ApvPlayer.FFI.LibMpv;
 
 [StructLayout(LayoutKind.Explicit)]
-public struct MpvNodeData
+public struct NodeData
 {
     [field: FieldOffset(0)] public nint CString;
 

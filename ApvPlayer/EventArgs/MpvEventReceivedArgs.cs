@@ -4,11 +4,11 @@ namespace ApvPlayer.EventArgs;
 
 public class MpvEventReceivedArgs : System.EventArgs
 {
-    public MpvEvent Evnet { get; }
+    public MpvEvent Event { get; }
 
-    public MpvEventReceivedArgs(MpvEvent evnet)
+    public MpvEventReceivedArgs(MpvEvent @event)
     {
-        this.Evnet = evnet;
+        this.Event = @event;
     }
     
 }

@@ -6,16 +6,24 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         xmlns:local="using:ApvPlayer.Controls"
         xmlns:dialogHostAvalonia="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+        xmlns:conv="clr-namespace:ApvPlayer.Converters"
         x:Class="ApvPlayer.Views.MainWindow"
         x:DataType="models:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="ApvPlayer"
+        Title="{Binding 
+        ElementName=VideoControl, 
+        Path=FileName,
+        Converter={StaticResource ObjectConverter}, 
+        ConverterParameter=ApvPlayer, 
+        Mode=OneWay}"
         Name="AppMainWindow">
 
     <Design.DataContext>
         <models:MainWindowViewModel />
     </Design.DataContext>
-
+    <Window.Resources>
+        <!-- <views:FileNameConverter x:Key="FileConverter"></views:FileNameConverter>dd -->
+    </Window.Resources>
     <dialogHostAvalonia:DialogHost Identifier="Popup" 
                                    dialogHostAvalonia:DialogHostStyle.ClipToBounds="True"
                                    dialogHostAvalonia:DialogHostStyle.CornerRadius="8">
@@ -31,7 +39,7 @@
                     </Grid>
                 </DataTemplate>
             </dialogHostAvalonia:DialogHost.DataTemplates>
-            <local:VideoControl />
+            <local:VideoControl x:Name="VideoControl" />
         </dialogHostAvalonia:DialogHost>
     </dialogHostAvalonia:DialogHost>
 

@@ -11,7 +11,7 @@ namespace ApvPlayer.FFI.LibMpv;
 [StructLayout(LayoutKind.Sequential)]
 public struct MpvNode
 {
-    public MpvNodeData Data;
+    public NodeData Data;
 
     /**
      * Type of the data stored in this struct. This value rules what members in
@@ -30,31 +30,31 @@ public struct MpvNode
      * If you encounter a value you don't know, you must not make any
      * assumptions about the contents of union u.
      */
-    public MpvFormat Format;
+    public Format Format;
 
     public static MpvNode FromObject(object data)
     {
         MpvNode node = new MpvNode
         {
-            Format = MpvFormat.MpvFormatNone
+            Format = Format.None
         };
 
         switch (data)
         {
             case double or float:
-                node.Format = MpvFormat.MpvFormatDouble;
+                node.Format = Format.Double;
                 node.Data.DoubleData = (double)data;
                 break;
             case bool flag:
-                node.Format = MpvFormat.MpvFormatFlag;
+                node.Format = Format.Flag;
                 node.Data.Flag = flag ? 1 : 0;
                 break;
             case int or uint or ulong or long:
-                node.Format = MpvFormat.MpvFormatInt64;
+                node.Format = Format.Int64;
                 node.Data.IntData = (long)data;
                 break;
             case string str:
-                node.Format = MpvFormat.MpvFormatString;
+                node.Format = Format.String;
                 // node.Data.CString = Marshal.StringToHGlobalAnsi(str);
                 //var bytes = Encoding.UTF8.GetBytes(str + "\0");
                 //nint ptr = Marshal.AllocHGlobal(bytes.Length);
@@ -63,12 +63,12 @@ public struct MpvNode
                 break;
             case List<object> list:
             {
-                node.Format = MpvFormat.MpvFormatNodeArray;
-                node.Data.NodeList = Marshal.AllocHGlobal(Marshal.SizeOf<MpvNodeList>());
+                node.Format = Format.NodeArray;
+                node.Data.NodeList = Marshal.AllocHGlobal(Marshal.SizeOf<NodeList>());
             
             
                 var nodeSize = Marshal.SizeOf<MpvNode>();
-                MpvNodeList nodeList = new MpvNodeList
+                NodeList nodeList = new NodeList
                 {
                     NodeValues = Marshal.AllocHGlobal(nodeSize * list.Count),
                     Num = list.Count
@@ -86,11 +86,11 @@ public struct MpvNode
             }
             case Dictionary<string, object> dictionary:
             {
-                node.Format = MpvFormat.MpvFormatNodeMap;
-                node.Data.NodeList = Marshal.AllocHGlobal(Marshal.SizeOf<MpvNodeList>());
+                node.Format = Format.NodeMap;
+                node.Data.NodeList = Marshal.AllocHGlobal(Marshal.SizeOf<NodeList>());
             
                 var nodeSize = Marshal.SizeOf<MpvNode>();
-                MpvNodeList nodeList = new MpvNodeList()
+                NodeList nodeList = new NodeList()
                 {
                     NodeValues = Marshal.AllocHGlobal(nodeSize * dictionary.Count),
                     Num = dictionary.Count,
@@ -123,12 +123,12 @@ public struct MpvNode
     {
         switch (Format)
         {
-            case MpvFormat.MpvFormatString:
+            case Format.String:
                 Marshal.FreeHGlobal(Data.CString);
                 break;
-            case MpvFormat.MpvFormatNodeMap:
+            case Format.NodeMap:
             {
-                MpvNodeList list = Marshal.PtrToStructure<MpvNodeList>(Data.NodeList);
+                NodeList list = Marshal.PtrToStructure<NodeList>(Data.NodeList);
                 Marshal.FreeHGlobal(list.NodeValues);
                 for (int i = 0; i < list.Num; i++)
                 {
@@ -139,9 +139,9 @@ public struct MpvNode
                 Marshal.FreeHGlobal(Data.NodeList);
                 break;
             }
-            case MpvFormat.MpvFormatNodeArray:
+            case Format.NodeArray:
             {
-                MpvNodeList list = Marshal.PtrToStructure<MpvNodeList>(Data.NodeList);
+                NodeList list = Marshal.PtrToStructure<NodeList>(Data.NodeList);
                 Marshal.FreeHGlobal(list.NodeValues);
                 Marshal.FreeHGlobal(Data.NodeList);
                 break;
@@ -153,45 +153,44 @@ public struct MpvNode
         object? ret;
         switch (Format)
         {
-            case MpvFormat.MpvFormatDouble:
+            case Format.Double:
             {
                 ret = Data.DoubleData;
                 break;
             }
-            case MpvFormat.MpvFormatString:
+            case Format.String:
             {
                 nint ptr = Data.CString;
                 //var s = Marshal.PtrToStringUTF8(ptr);
-                //int count = 0;
-                //while (true)
-                //{
-                //    byte b = Marshal.ReadByte(ptr);
-                //    if (b == 0)
-                //        break;
-                //    ptr++;
-                //    count++;
-                //}
-                //byte[] byteString = new byte[count];
-                //Marshal.Copy(ptr, byteString, 0, count);
-                //ret = Encoding.Default.GetString(byteString);
+                // int count = 0;
+                // while (true)
+                // {
+                //     byte b = Marshal.ReadByte(ptr);
+                //     if (b == 0)
+                //         break;
+                //     ptr++;
+                //     count++;
+                // }
+                // byte[] byteString = new byte[count];
+                // Marshal.Copy(ptr, byteString, 0, count);
+                // ret = Encoding.Default.GetString(byteString);
                     //ret = Data.CString;
-                
                 ret = Marshal.PtrToStringUTF8(ptr);
                 break;
             }
-            case MpvFormat.MpvFormatFlag:
+            case Format.Flag:
             {
                 ret = Data.Flag != 0;
                 break;
             }
-            case MpvFormat.MpvFormatInt64:
+            case Format.Int64:
             {
                 ret = Data.IntData;
                 break;
             }
-            case MpvFormat.MpvFormatNodeArray:
+            case Format.NodeArray:
             {
-                var nodeList = Marshal.PtrToStructure<MpvNodeList>(Data.NodeList);
+                var nodeList = Marshal.PtrToStructure<NodeList>(Data.NodeList);
                 var tmp = new List<object>();
 
 
@@ -210,9 +209,9 @@ public struct MpvNode
                 ret = tmp;
                 break;
             }
-            case MpvFormat.MpvFormatNodeMap:
+            case Format.NodeMap:
             {
-                var nodeList = Marshal.PtrToStructure<MpvNodeList>(Data.NodeList);
+                var nodeList = Marshal.PtrToStructure<NodeList>(Data.NodeList);
                 var tmp = new Dictionary<string, object>();
                 for (int i = 0; i < nodeList.Num; i++)
                 {
@@ -234,11 +233,11 @@ public struct MpvNode
                 ret = tmp;
                 break;
             }
-            case MpvFormat.MpvFormatNone:
+            case Format.None:
                 return null;
-            case MpvFormat.MpvFormatOsdString:
-            case MpvFormat.MpvFormatNode:
-            case MpvFormat.MpvFormatByteArray:
+            case Format.OsdString:
+            case Format.Node:
+            case Format.ByteArray:
             default:
                 //throw new NotSupportedException("not support current format node");
                 Console.WriteLine("not support current format node");

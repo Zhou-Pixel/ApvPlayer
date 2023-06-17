@@ -1,0 +1,82 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:icon="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:controls="clr-namespace:ApvPlayer.Controls"
+             x:Class="ApvPlayer.Controls.VideoControlBar">
+    <UserControl.Styles>
+        <Style Selector="icon|Icon.Volume[IsPointerOver=true]">
+            <Setter Property="Foreground" Value="CornflowerBlue"></Setter>
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="Focusable" Value="False"></Setter>
+        </Style>
+    </UserControl.Styles>
+    <UserControl.Template>
+        <ControlTemplate TargetType="controls:VideoControlBar">
+            <Grid ColumnDefinitions="*" 
+                  RowDefinitions="Auto, Auto"
+                  ShowGridLines="False">
+                <Grid Grid.Row="0" 
+                      ColumnDefinitions="*, Auto, Auto" 
+                      Margin="5"
+                      ShowGridLines="False">
+                    <Slider Margin="10, 0, 0,0"
+                            IsEnabled="{TemplateBinding Active}"
+                            Value="{Binding Path=Position, RelativeSource={RelativeSource TemplatedParent}}"
+                            Maximum="{TemplateBinding Duration}"
+                            Grid.Column="0"
+                            PropertyChanged="OnVideoSliderPropertyChanged"
+                            Orientation="Horizontal">
+                    </Slider>
+                    <icon:Icon Classes="Volume" Grid.Column="1"
+                               Margin="20, 0, 15, 0"
+                               PointerReleased="OnVolumeClick"
+                               Value="{TemplateBinding VolumeIcon}">
+                    </icon:Icon>
+                    <Slider MinWidth="80"
+                            Maximum="100"
+                            Value="{Binding Path=Volume, RelativeSource={RelativeSource TemplatedParent}}"
+                            Grid.Column="2"
+                            Margin="0, 0, 10, 0">
+                    </Slider>
+                </Grid>
+
+                <Grid Margin="5" 
+                      Grid.Row="1" 
+                      Grid.Column="0"
+                      ColumnDefinitions="Auto, Auto, Auto Auto, *, Auto, Auto"
+                      ShowGridLines="False">
+                    <Button Grid.Column="0"
+                            Margin="5, 0, 5, 0"
+                            Click="OnPauseClick"
+                            icon:Attached.Icon="{TemplateBinding PauseIcon}" />
+                    <Button Margin="0, 0, 5, 0"
+                            Grid.Column="1"
+                            Click="OnStopClick"
+                            icon:Attached.Icon="fa-solid fa-stop" />
+                    <Button Grid.Column="2"
+                            Margin="0, 0, 0, 0"
+                            Click="OnFullScreenClick"
+                            icon:Attached.Icon="{TemplateBinding FullScreenIcon}" />
+                    <TextBlock Grid.Column="3"
+                               FontSize="20"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                               Margin="20, 0"
+                               Text="{TemplateBinding ProgressText}" />
+                    <ContentControl Grid.Column="4" />
+                    <Button Grid.Column="5" 
+                            Margin="0, 0, 5, 0"
+                            Click="OnScreenShotClick"
+                            icon:Attached.Icon="fa-solid fa-scissors"/>
+                    <Button Grid.Column="6"
+                            icon:Attached.Icon="fa-solid fa-gear"
+                            Click="OnSettingsClick" />
+                </Grid>
+            </Grid>
+        </ControlTemplate>
+    </UserControl.Template>
+</UserControl>

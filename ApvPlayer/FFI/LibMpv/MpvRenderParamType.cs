@@ -1,12 +1,12 @@
 ﻿namespace ApvPlayer.FFI.LibMpv;
 
-public enum MpvRenderParamType
+public enum RenderParamType
 {
     /**
  * Not a valid value, but also used to terminate a params array. Its value
  * is always guaranteed to be 0 (even if the ABI changes in the future).
  */
-    MpvRenderParamInvalid = 0,
+    Invalid = 0,
     /**
      * The render API to use. Valid for mpv_render_context_create().
      *
@@ -22,18 +22,18 @@ public enum MpvRenderParamType
      *      calling mpv_render_* functions (unless specified otherwise). It
      *      must be the same context for the same mpv_render_context.
      */
-    MpvRenderParamApiType = 1,
+    ApiType = 1,
     /**
      * Required parameters for initializing the OpenGL renderer. Valid for
      * mpv_render_context_create().
      * Type: mpv_opengl_init_params*
      */
-    MpvRenderParamOpenglInitParams = 2,
+    OpenglInitParams = 2,
     /**
      * Describes a GL render target. Valid for mpv_render_context_render().
      * Type: mpv_opengl_fbo*
      */
-    MpvRenderParamOpenglFbo = 3,
+    OpenglFbo = 3,
     /**
      * Control flipped rendering. Valid for mpv_render_context_render().
      * Type: int*
@@ -41,7 +41,7 @@ public enum MpvRenderParamType
      * which is needed e.g. when rendering to an OpenGL default framebuffer
      * (which has a flipped coordinate system).
      */
-    MpvRenderParamFlipY = 4,
+    FlipY = 4,
     /**
      * Control surface depth. Valid for mpv_render_context_render().
      * Type: int*
@@ -49,34 +49,34 @@ public enum MpvRenderParamType
      * bits per channel. If omitted or set to 0, the renderer will assume 8.
      * Typically used to control dithering.
      */
-    MpvRenderParamDepth = 5,
+    Depth = 5,
     /**
      * ICC profile blob. Valid for mpv_render_context_set_parameter().
      * Type: mpv_byte_array*
      * Set an ICC profile for use with the "icc-profile-auto" option. (If the
      * option is not enabled, the ICC data will not be used.)
      */
-    MpvRenderParamIccProfile = 6,
+    IccProfile = 6,
     /**
      * Ambient light in lux. Valid for mpv_render_context_set_parameter().
      * Type: int*
      * This can be used for automatic gamma correction.
      */
-    MpvRenderParamAmbientLight = 7,
+    AmbientLight = 7,
     /**
      * X11 Display, sometimes used for hwdec. Valid for
      * mpv_render_context_create(). The Display must stay valid for the lifetime
      * of the mpv_render_context.
      * Type: Display*
      */
-    MpvRenderParamX11Display = 8,
+    X11Display = 8,
     /**
      * Wayland display, sometimes used for hwdec. Valid for
      * mpv_render_context_create(). The wl_display must stay valid for the
      * lifetime of the mpv_render_context.
      * Type: struct wl_display*
      */
-    MpvRenderParamWlDisplay = 9,
+    WlDisplay = 9,
     /**
      * Better control about rendering and enabling some advanced features. Valid
      * for mpv_render_context_create().
@@ -116,7 +116,7 @@ public enum MpvRenderParamType
      *
      * Type: int*: 0 for disable (default), 1 for enable
      */
-    MpvRenderParamAdvancedControl = 10,
+    AdvancedControl = 10,
     /**
      * Return information about the next frame to render. Valid for
      * mpv_render_context_get_info().
@@ -129,7 +129,7 @@ public enum MpvRenderParamType
      * mpv_render_context_render(). If there is no next frame, then the
      * return value will have is_valid set to 0.
      */
-    MpvRenderParamNextFrameInfo = 11,
+    NextFrameInfo = 11,
     /**
      * Enable or disable video timing. Valid for mpv_render_context_render().
      *
@@ -146,7 +146,7 @@ public enum MpvRenderParamType
      * Disabling this without doing anything in addition will result in A/V sync
      * being slightly off.
      */
-    MpvRenderParamBlockForTargetTime = 12,
+    BlockForTargetTime = 12,
     /**
      * Use to skip rendering in mpv_render_context_render().
      *
@@ -162,24 +162,24 @@ public enum MpvRenderParamType
      * you have to call mpv_render_context_report_swap(). It also does timing
      * in the same way.
      */
-    MpvRenderParamSkipRendering = 13,
+    SkipRendering = 13,
     /**
      * Deprecated. Not supported. Use MPV_RENDER_PARAM_DRM_DISPLAY_V2 instead.
      * Type : struct mpv_opengl_drm_params*
      */
-    MpvRenderParamDrmDisplay = 14,
+    DrmDisplay = 14,
     /**
      * DRM draw surface size, contains draw surface dimensions.
      * Valid for mpv_render_context_create().
      * Type : struct mpv_opengl_drm_draw_surface_size*
      */
-    MpvRenderParamDrmDrawSurfaceSize = 15,
+    DrmDrawSurfaceSize = 15,
     /**
      * DRM display, contains drm display handles.
      * Valid for mpv_render_context_create().
      * Type : struct mpv_opengl_drm_params_v2*
     */
-    MpvRenderParamDrmDisplayV2 = 16,
+    DrmDisplayV2 = 16,
     /**
      * MPV_RENDER_API_TYPE_SW only: rendering target surface size, mandatory.
      * Valid for MPV_RENDER_API_TYPE_SW & mpv_render_context_render().
@@ -189,7 +189,7 @@ public enum MpvRenderParamType
      * the video gets scaled and black bars are added if the video size or
      * aspect ratio mismatches with the target size.
      */
-    MpvRenderParamSwSize = 17,
+    SwSize = 17,
     /**
      * MPV_RENDER_API_TYPE_SW only: rendering target surface pixel format,
      * mandatory.
@@ -214,7 +214,7 @@ public enum MpvRenderParamType
      *      plane, and is supported as conversion output. It is not a good idea
      *      to rely on any of these. Their semantics and handling could change.
      */
-    MpvRenderParamSwFormat = 18,
+    SwFormat = 18,
     /**
      * MPV_RENDER_API_TYPE_SW only: rendering target surface bytes per line,
      * mandatory.
@@ -235,7 +235,7 @@ public enum MpvRenderParamType
      * possible on platforms which do not support unaligned accesses (either
      * through normal memory access or aligned SIMD memory access instructions).
      */
-    MpvRenderParamSwStride = 19,
+    SwStride = 19,
     /*
      * MPV_RENDER_API_TYPE_SW only: rendering target surface pixel data pointer,
      * mandatory.
@@ -253,5 +253,5 @@ public enum MpvRenderParamType
      *
      * See MPV_RENDER_PARAM_SW_STRIDE for alignment requirements.
      */
-    MpvRenderParamSwPointer = 20,
+    SwPointer = 20,
 }

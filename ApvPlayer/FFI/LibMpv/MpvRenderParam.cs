@@ -3,8 +3,8 @@
 namespace ApvPlayer.FFI.LibMpv;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct MpvRenderParam
+public struct RenderParam
 {
-       public MpvRenderParamType Type;
+       public RenderParamType Type;
        public nint Data;
 }

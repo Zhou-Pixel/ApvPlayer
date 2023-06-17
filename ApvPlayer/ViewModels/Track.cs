@@ -9,6 +9,8 @@ public class Track
     public string? Title { get; set; }
     public required string Type { get; set; }
     
+    public string? Lang { get; set; }
+    
     public MenuItem? Item { get; set; }
 
     protected bool Equals(Track other)

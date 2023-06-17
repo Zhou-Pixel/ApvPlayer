@@ -8,7 +8,7 @@ public delegate nint MpvGetProcAddressCallback(nint ctx, string name);
 
 
 [StructLayout(LayoutKind.Sequential)]
-public struct MpvOpenglInitParams
+public struct OpenglInitParams
 {
     /**
          * This retrieves OpenGL function pointers, and will use them in subsequent

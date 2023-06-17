@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace ApvPlayer.FFI.LibMpv;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct MpvEventProperty
+public struct EventProperty
 {
     /**
          * Name of the property.
@@ -17,7 +17,7 @@ public struct MpvEventProperty
          * the property could not be retrieved (unavailable, or an error happened),
          * in which case the format is MPV_FORMAT_NONE.
          */
-    public MpvFormat Format;
+    public Format Format;
 
     /**
          * Received property value. Depends on the format. This is like the
@@ -34,7 +34,7 @@ public struct MpvEventProperty
 
     public object? TakeData()
     {
-         if (Format == MpvFormat.MpvFormatNone || Data == nint.Zero)
+         if (Format == Format.None || Data == nint.Zero)
          {
               return null;
          }
@@ -42,35 +42,36 @@ public struct MpvEventProperty
          object? ret;
          switch (Format)
          {
-              case MpvFormat.MpvFormatDouble:
+              case Format.Double:
               {
                    var value = new double[1];
                    Marshal.Copy(Data, value, 0, 1);
                    ret = value[0];
                    break;
               }
-              case MpvFormat.MpvFormatString:
+              case Format.String:
               {
-                   ret = Marshal.PtrToStringAnsi(Data);
+                   var ptr = Marshal.ReadIntPtr(Data);
+                   ret = Marshal.PtrToStringAnsi(ptr);
                    break;
               }
-              case MpvFormat.MpvFormatFlag:
+              case Format.Flag:
               {
                    var value = Marshal.ReadInt32(Data);
                    ret = value != 0;
                    break;
               }
-              case MpvFormat.MpvFormatInt64:
+              case Format.Int64:
               {
                    ret = Marshal.ReadInt64(Data);
                    break;
               }
-              case MpvFormat.MpvFormatNone:
-              case MpvFormat.MpvFormatOsdString:
-              case MpvFormat.MpvFormatNode:
-              case MpvFormat.MpvFormatNodeArray:
-              case MpvFormat.MpvFormatNodeMap:
-              case MpvFormat.MpvFormatByteArray:
+              case Format.None:
+              case Format.OsdString:
+              case Format.Node:
+              case Format.NodeArray:
+              case Format.NodeMap:
+              case Format.ByteArray:
               default:
                    throw new NotImplementedException("not support now");
          }
