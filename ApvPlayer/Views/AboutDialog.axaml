@@ -2,14 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:material="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ApvPlayer.Views.AboutDialog">
     <TabControl Width="500" Height="400">
         <TabItem Header="关于">
             <StackPanel>
-                <TextBlock Text="ApvPlayer 0.0.1" 
-                           Classes="Headline6" 
+                <TextBlock Text="ApvPlayer 0.0.2" 
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"/>
                 <TextBlock Text="ApvPlayer is a mpv front end, using Avalonia and opengl fbo to render video"
@@ -17,46 +15,45 @@
                            FontSize="20"
                            TextWrapping="Wrap"
                            VerticalAlignment="Center"
-                           HorizontalAlignment="Center"/>
+                           HorizontalAlignment="Center" />
                 <TextBlock Text="Licence: GPL-2.0"
                            FontSize="20"
-                           Margin="0, 10"/>
+                           Margin="0, 10" />
             </StackPanel>
         </TabItem>
         <TabItem Header="许可">
             <ScrollViewer>
                 <StackPanel>
-                    
-                    <material:Card>
+                    <Border Classes="Hover" Theme="{StaticResource CardBorder}">
                         <StackPanel>
-                            <TextBlock Classes="Headline6" Text="mpv" />
+                            <Label Classes="H2" Theme="{StaticResource TitleLabel}" Content="mpv" />
                             <TextBlock Text="GPL-2.0"></TextBlock>
                         </StackPanel>
-                    </material:Card>
-                    <material:Card>
+                    </Border>
+                    <Border Classes="Hover" Theme="{StaticResource CardBorder}">
                         <StackPanel>
-                            <TextBlock Classes="Headline6" Text="Avalonia" />
+                            <Label Classes="H2" Theme="{StaticResource TitleLabel}" Content="Avalonia" />
                             <TextBlock Text="MIT License"></TextBlock>
                         </StackPanel>
-                    </material:Card>
-                    <material:Card>
+                    </Border>
+                    <Border Classes="Hover" Theme="{StaticResource CardBorder}">
                         <StackPanel>
-                            <TextBlock Classes="Headline6" Text="Semi.Avalonia" />
+                            <Label Classes="H2" Theme="{StaticResource TitleLabel}" Content="Semi.Avalonia" />
                             <TextBlock Text="MIT License"></TextBlock>
                         </StackPanel>
-                    </material:Card>
-                    <material:Card>
+                    </Border>
+                    <Border Classes="Hover" Theme="{StaticResource CardBorder}">
                         <StackPanel>
-                            <TextBlock Classes="Headline6" Text="DialogHost.Avalonia" />
+                            <Label Classes="H2" Theme="{StaticResource TitleLabel}" Content="DialogHost.Avalonia" />
                             <TextBlock Text="MIT License"></TextBlock>
                         </StackPanel>
-                    </material:Card>
-                    <material:Card>
+                    </Border>
+                    <Border Classes="Hover" Theme="{StaticResource CardBorder}">
                         <StackPanel>
-                            <TextBlock Classes="Headline6" Text=".NET" />
+                            <Label Classes="H2" Theme="{StaticResource TitleLabel}" Content=".NET" />
                             <TextBlock Text="MIT License"></TextBlock>
                         </StackPanel>
-                    </material:Card>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
         </TabItem>

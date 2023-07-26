@@ -1,4 +1,4 @@
-﻿namespace ApvPlayer.Utils;
+﻿namespace ApvPlayer.Utils.System;
 
 public interface ISystemSetting
 {

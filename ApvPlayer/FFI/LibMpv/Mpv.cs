@@ -12,15 +12,15 @@ namespace ApvPlayer.FFI.LibMpv;
 
 public class Mpv
 {
-    private static readonly MpvFunctions MpvFunctions = MpvFunctions.Instance;
-    private readonly nint _mpvHandle = MpvFunctions.Create();
+    private static readonly Functions Functions = Functions.Instance;
+    private readonly nint _mpvHandle = Functions.Create();
     private nint _mpvrender = nint.Zero;
     private RenderContextUpdateCallback? _renderContextUpdateCallback;
     private WakeupCallback _mpvWakeupCallback;
     private MpvGetProcAddressCallback? _mpvGetProcAddressCallback;
 
     private readonly Dictionary<string, object?> _valueCache = new();
-    public event Action<object, MpvPropertyChangedEventArgs>? MpvPropertyChanged;
+    public event Func<object, MpvPropertyChangedEventArgs, System.Threading.Tasks.Task>? MpvPropertyChanged;
     public event Action<object, MpvEventReceivedArgs>? MpvEventReceived;
     public Mpv()
     {
@@ -37,11 +37,11 @@ public class Mpv
     {
         if (_mpvrender != nint.Zero)
         {
-            MpvFunctions.RenderContextFree(_mpvrender);
+            Functions.RenderContextFree(_mpvrender);
             _mpvrender = nint.Zero;
         }
 
-        MpvFunctions.TerminateDestroy(_mpvHandle);
+        Functions.TerminateDestroy(_mpvHandle);
     }
 
     private void WakeupCallback(nint _)
@@ -77,9 +77,11 @@ public class Mpv
                         else
                             fromMpv = true;
                         // Console.WriteLine($"property name {name} value {data} FromMpv {fromMpv}");
-                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        await Dispatcher.UIThread.InvokeAsync(async () =>
                         {
-                            MpvPropertyChanged?.Invoke(this, new MpvPropertyChangedEventArgs(data, name, fromMpv));
+                            if (MpvPropertyChanged == null)
+                                return;
+                            await MpvPropertyChanged.Invoke(this, new MpvPropertyChangedEventArgs(data, name, fromMpv));
                         });
                         //if (name == "time-pos")
                         //{
@@ -151,7 +153,7 @@ public class Mpv
 
     public void Initialize()
     {
-        int code = MpvFunctions.Initialize(_mpvHandle);
+        int code = Functions.Initialize(_mpvHandle);
         if (code != 0)
         {
             throw new MpvException(code);
@@ -164,7 +166,7 @@ public class Mpv
         nint ptrName = Marshal.StringToHGlobalAnsi(name);
         nint ptrData = Marshal.StringToHGlobalAnsi(data);
 
-        int code = MpvFunctions.SetOptionString(_mpvHandle, ptrName, ptrData);
+        int code = Functions.SetOptionString(_mpvHandle, ptrName, ptrData);
         
         Marshal.FreeHGlobal(ptrName);
         Marshal.FreeHGlobal(ptrData);
@@ -179,7 +181,7 @@ public class Mpv
     public void SetWakeupCallback(WakeupCallback cb, nint data)
     {
         _mpvWakeupCallback = cb;
-        MpvFunctions.SetWakeupCallback(_mpvHandle, _mpvWakeupCallback, data);
+        Functions.SetWakeupCallback(_mpvHandle, _mpvWakeupCallback, data);
     }
 
     public void CommandNode(List<string> cmd)
@@ -201,7 +203,7 @@ public class Mpv
             i++;
         }
 
-        int code = MpvFunctions.Command(_mpvHandle, Marshal.UnsafeAddrOfPinnedArrayElement(argPtr, 0));
+        int code = Functions.Command(_mpvHandle, Marshal.UnsafeAddrOfPinnedArrayElement(argPtr, 0));
 
         foreach (var item in argPtr)
         {
@@ -276,28 +278,72 @@ public class Mpv
         //}
     }
 
+    
+
+    public Future<object?> CommandNodeAsync(params object[] args)
+    {
+        return CommandNodeAsync(args.ToList());   
+    }
+
+    public Future<object?> CommandNodeAsync(List<object> cmd)
+    {
+        Node node = Node.FromObject(cmd);
+        nint nodePtr = Marshal.AllocHGlobal(Marshal.SizeOf<Node>());
+        Marshal.StructureToPtr(node, nodePtr, false);
+
+        ulong replyUserData = (ulong)new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
+        var future = new Future<object?>(this)
+        {
+            Handle = (future, args) =>
+            {
+                if (args.Event.EventId != EventId.CommandReply || args.Event.ReplyUserData != replyUserData)
+                    return false;
+                EventCommand eventCommand = Marshal.PtrToStructure<EventCommand>(args.Event.Data);
+                ((Future<object?>)future).Result = eventCommand.Node.ToObject();
+                return true;
+            },
+            Completed = () =>
+            {
+                try
+                {
+                    int code = Functions.CommandNodeAsync(_mpvHandle, replyUserData, nodePtr);
+                    node.Free();
+                    if (code != 0)
+                    {
+                        throw new MpvException(code);
+                    }
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(nodePtr);
+                }
+            }
+        };
+        return future;
+    }
 
     public object? CommandNode(List<object> cmd)
     {
-        MpvNode node = MpvNode.FromObject(cmd);
-        nint nodePtr = Marshal.AllocHGlobal(Marshal.SizeOf<MpvNode>());
-        Marshal.StructureToPtr(node, nodePtr, true);
+        Node node = Node.FromObject(cmd);
+        nint nodePtr = Marshal.AllocHGlobal(Marshal.SizeOf<Node>());
+        Marshal.StructureToPtr(node, nodePtr, false);
 
-        var outPtr = Marshal.AllocHGlobal(Marshal.SizeOf<MpvNode>());
+        var outPtr = Marshal.AllocHGlobal(Marshal.SizeOf<Node>());
         try
         {
 
-            int code = MpvFunctions.CommandNode(_mpvHandle, nodePtr, outPtr);
-            var outNode = Marshal.PtrToStructure<MpvNode>(outPtr);
+            int code = Functions.CommandNode(_mpvHandle, nodePtr, outPtr);
+            var outNode = Marshal.PtrToStructure<Node>(outPtr);
 
             node.Free();
 
             object? ret = outNode.ToObject();
             if (code != 0)
             {
+                Console.WriteLine($"command failed {code}");
                 throw new MpvException(code);
             }
-            MpvFunctions.FreeNodeContents(outPtr);
+            Functions.FreeNodeContents(outPtr);
             return ret;
         }
         finally
@@ -313,10 +359,10 @@ public class Mpv
     {
         return CommandNode(cmd.ToList());
     }
-    public MpvEvent WaitEvent(double timeout)
+    public Event WaitEvent(double timeout)
     {
-        var ptr = MpvFunctions.WaitEvent(_mpvHandle, timeout);
-        return Marshal.PtrToStructure<MpvEvent>(ptr);
+        var ptr = Functions.WaitEvent(_mpvHandle, timeout);
+        return Marshal.PtrToStructure<Event>(ptr);
     }
 
     public void RenderContextCreate(Dictionary<RenderParamType, object> parameters)
@@ -388,7 +434,7 @@ public class Mpv
         paraArray[i].Type = RenderParamType.Invalid;
         
         var outptr = new nint [1];
-        int code = MpvFunctions.RenderContextCreate(Marshal.UnsafeAddrOfPinnedArrayElement(outptr, 0), _mpvHandle, Marshal.UnsafeAddrOfPinnedArrayElement(paraArray, 0));
+        int code = Functions.RenderContextCreate(Marshal.UnsafeAddrOfPinnedArrayElement(outptr, 0), _mpvHandle, Marshal.UnsafeAddrOfPinnedArrayElement(paraArray, 0));
         
         Free(toBeFree);
         if (code != 0)
@@ -403,7 +449,7 @@ public class Mpv
     {
         _renderContextUpdateCallback = callback;
         // MpvFunctions.RenderContextSetUpdateCallback(_mpvrender, Marshal.GetFunctionPointerForDelegate(_renderContextUpdateCallback), data);
-        MpvFunctions.RenderContextSetUpdateCallback(_mpvrender, _renderContextUpdateCallback, data);
+        Functions.RenderContextSetUpdateCallback(_mpvrender, _renderContextUpdateCallback, data);
     }
 
     public void RenderContextRender(Dictionary<RenderParamType, object> parameters)
@@ -479,7 +525,7 @@ public class Mpv
         paraArray[i].Data = nint.Zero;
         paraArray[i].Type = RenderParamType.Invalid;
 
-        int code = MpvFunctions.RenderContextRender(_mpvrender, Marshal.UnsafeAddrOfPinnedArrayElement(paraArray, 0));
+        int code = Functions.RenderContextRender(_mpvrender, Marshal.UnsafeAddrOfPinnedArrayElement(paraArray, 0));
         Free(toBeFree);
         if (code != 0)
         {
@@ -491,7 +537,7 @@ public class Mpv
     public void ObserveProperty(string name, Format format)
     {
         nint namePtr = Marshal.StringToHGlobalAnsi(name);
-        int code = MpvFunctions.ObserveProperty(_mpvHandle, 0, namePtr, format);
+        int code = Functions.ObserveProperty(_mpvHandle, 0, namePtr, format);
         Marshal.FreeHGlobal(namePtr);
         if (code != 0)
         {
@@ -515,8 +561,8 @@ public class Mpv
     public object GetProperty(string name)
     {
         var namePtr = Marshal.StringToCoTaskMemUTF8(name);
-        var nodePtr = Marshal.AllocHGlobal(Marshal.SizeOf<MpvNode>());
-        int code = MpvFunctions.GetProperty(_mpvHandle, namePtr, Format.Node, nodePtr);
+        var nodePtr = Marshal.AllocHGlobal(Marshal.SizeOf<Node>());
+        int code = Functions.GetProperty(_mpvHandle, namePtr, Format.Node, nodePtr);
         Marshal.FreeHGlobal(namePtr);
 
         if (code != 0)
@@ -528,19 +574,45 @@ public class Mpv
             };
         }
 
-        var ret = Marshal.PtrToStructure<MpvNode>(nodePtr).ToObject();
-        MpvFunctions.FreeNodeContents(nodePtr);
+        var ret = Marshal.PtrToStructure<Node>(nodePtr).ToObject();
+        Functions.FreeNodeContents(nodePtr);
         Marshal.FreeHGlobal(nodePtr);
         return ret!;
     }
 
-    public void SetProperty(string name, object data)
+    public Future SetPropertyAsync(string name, object data)
     {
-        MpvNode node = MpvNode.FromObject(data);
-        var dataPtr = Marshal.AllocHGlobal(Marshal.SizeOf<MpvNode>());
+        Node node = Node.FromObject(data);
+        var dataPtr = Marshal.AllocHGlobal(Marshal.SizeOf<Node>());
         Marshal.StructureToPtr(node, dataPtr, true);
         var namePtr = Marshal.StringToHGlobalAnsi(name);
-        int code = MpvFunctions.SetProperty(_mpvHandle, namePtr, Format.Node, dataPtr);
+        ulong replyUserData = (ulong)new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
+        Future future = new Future(this)
+        {
+            Handle = (_, args) => args.Event.EventId == EventId.SetPropertyReply && args.Event.ReplyUserData == replyUserData,
+            Completed = () =>
+            {
+                int code = Functions.SetPropertyAsync(_mpvHandle, replyUserData, namePtr, Format.Node, dataPtr);
+                node.Free();
+                
+                Marshal.FreeHGlobal(namePtr);
+                if (code != 0)
+                {
+                    throw new MpvException(code);
+                }
+                _valueCache[name] = data;
+            }
+        };
+        return future;
+    }
+    
+    public void SetProperty(string name, object data)
+    {
+        Node node = Node.FromObject(data);
+        var dataPtr = Marshal.AllocHGlobal(Marshal.SizeOf<Node>());
+        Marshal.StructureToPtr(node, dataPtr, true);
+        var namePtr = Marshal.StringToHGlobalAnsi(name);
+        int code = Functions.SetProperty(_mpvHandle, namePtr, Format.Node, dataPtr);
         node.Free();
         Marshal.FreeHGlobal(namePtr);
         if (code != 0)

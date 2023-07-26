@@ -29,10 +29,13 @@ public partial class VideoControl : UserControl
         InitializeComponent();
         var model = new VideoControlModel();
         model.RequestUpdateGl += UpdateGl;
-        model.RequestOpenFile += GetOpenFile;
         model.RequestFullScreen += SwitchFullScreen;
-        
+        model.RequestOpenFile += GetOpenFile;
         DataContext = model;
+        Unloaded += async (sender, args) =>
+        {
+            await model.Unloaded();
+        };
     }
 
 

@@ -76,4 +76,14 @@ public delegate void FreeNodeContents(nint node);
 public delegate int SetProperty(nint ctx, nint name, Format format, nint data);
 
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate int Command(nint ctx, nint arg);
+public delegate int Command(nint ctx, nint args);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate int CommandAsync(nint ctx, ulong replyUserData, nint args);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate int CommandNodeAsync(nint ctx, ulong replyUserData, nint args);
+
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate int SetPropertyAsync(nint ctx, ulong replyUserdata, nint name, Format format, nint data);

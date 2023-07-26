@@ -15,10 +15,16 @@ public sealed class OpenGlControl : OpenGlControlBase, ICustomHitTest
         AvaloniaProperty.Register<OpenGlControl, Mpv>(nameof(Handle));
 
     private bool _first = true;
+
     public required Mpv Handle
     {
         set => SetValue(HandleProperty, value);
         get => GetValue(HandleProperty);
+    }
+
+    public OpenGlControl()
+    {
+        Console.WriteLine("new OpenGlControl");
     }
 
     protected override void OnOpenGlRender(GlInterface gl, int fb)
@@ -27,14 +33,14 @@ public sealed class OpenGlControl : OpenGlControlBase, ICustomHitTest
         var fbo = new OpenglFbo
         {
             Fbo = fb,
-            W = (int)(Bounds.Width * scaling ),
-            H = (int)(Bounds.Height * scaling ),
+            W = (int)(Bounds.Width * scaling),
+            H = (int)(Bounds.Height * scaling),
             InternalFormat = 0
         };
         var parameters = new Dictionary<RenderParamType, object>
         {
-            { RenderParamType.OpenglFbo, fbo},
-            { RenderParamType.FlipY, 1}
+            { RenderParamType.OpenglFbo, fbo },
+            { RenderParamType.FlipY, 1 }
         };
         Handle.RenderContextRender(parameters);
     }
@@ -44,17 +50,16 @@ public sealed class OpenGlControl : OpenGlControlBase, ICustomHitTest
     {
         await Dispatcher.UIThread.InvokeAsync(RequestNextFrameRendering);
     }
-    
+
     protected override void OnOpenGlInit(GlInterface gl)
     {
-        
         // bug due to avalonia https://github.com/AvaloniaUI/Avalonia/issues/10371
         if (!_first)
         {
             Console.WriteLine("init twice");
             return;
         }
-        
+
 
         _first = false;
         OpenglInitParams para = new()
@@ -64,8 +69,8 @@ public sealed class OpenGlControl : OpenGlControlBase, ICustomHitTest
 
         var parameters = new Dictionary<RenderParamType, object>
         {
-            {RenderParamType.ApiType, "opengl"},
-            {RenderParamType.OpenglInitParams, para},
+            { RenderParamType.ApiType, "opengl" },
+            { RenderParamType.OpenglInitParams, para },
         };
         Handle.RenderContextCreate(parameters);
         Handle.RenderContextSetUpdateCallback(UpdateGl, nint.Zero);
@@ -73,5 +78,4 @@ public sealed class OpenGlControl : OpenGlControlBase, ICustomHitTest
 
 
     public bool HitTest(Point point) => true;
-    
 }

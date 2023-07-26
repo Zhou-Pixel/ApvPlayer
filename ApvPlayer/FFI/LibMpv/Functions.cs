@@ -4,22 +4,22 @@ using ApvPlayer.FFI.LibraryLoaders;
 
 namespace ApvPlayer.FFI.LibMpv;
 
-public class MpvFunctions
+public class Functions
 {
     
     private readonly ILibraryLoader _libraryLoader;
     private static string _mpvLibraryPath = string.Empty;
-    private static readonly Lazy<MpvFunctions> Lazy =
-        new Lazy<MpvFunctions>(() => new MpvFunctions());
+    private static readonly Lazy<Functions> Lazy =
+        new Lazy<Functions>(() => new Functions());
     
-    public static MpvFunctions Instance => Lazy.Value;
+    public static Functions Instance => Lazy.Value;
 
     public static void Setup(string mpvPath)
     {
         _mpvLibraryPath = mpvPath;
     }
 
-    private MpvFunctions()
+    private Functions()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
@@ -57,9 +57,12 @@ public class MpvFunctions
         GetProperty = GetDelegate<GetProperty>("mpv_get_property");
         FreeNodeContents = GetDelegate<FreeNodeContents>("mpv_free_node_contents");
         SetProperty = GetDelegate<SetProperty>("mpv_set_property");
+        CommandAsync = GetDelegate<CommandAsync>("mpv_command_async");
+        CommandNodeAsync = GetDelegate<CommandNodeAsync>("mpv_command_node_async");
+        SetPropertyAsync = GetDelegate<SetPropertyAsync>("mpv_set_property_async");
     }
 
-    ~MpvFunctions()
+    ~Functions()
     {
         _libraryLoader.Dispose();
     }
@@ -113,5 +116,11 @@ public class MpvFunctions
     
     
     public SetProperty SetProperty { get; }
+    
+    public CommandAsync CommandAsync { get; }
+    
+    public CommandNodeAsync CommandNodeAsync { get; }
+    
+    public SetPropertyAsync  SetPropertyAsync { get; }
      
 }

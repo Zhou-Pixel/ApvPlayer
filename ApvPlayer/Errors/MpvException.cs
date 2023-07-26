@@ -16,6 +16,6 @@ public class MpvException : Exception
     public MpvException(int code)
     {
         Code = code;
-        Message = Marshal.PtrToStringAnsi(MpvFunctions.Instance.ErrorString(code)) ?? string.Empty;
+        Message = Marshal.PtrToStringAnsi(Functions.Instance.ErrorString(code)) ?? string.Empty;
     }
 }

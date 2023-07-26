@@ -3,7 +3,7 @@
 namespace ApvPlayer.FFI.LibMpv;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct MpvEvent
+public struct Event
 {
     /**
          * One of mpv_event. Keep in mind that later ABI compatible releases might

@@ -7,11 +7,26 @@
              x:DataType="models:VideoControlModel"
              xmlns:icon="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ApvPlayer.Controls.VideoControl" Focusable="True" FileName="{Binding FileName, Mode=OneWay}">
+             x:Class="ApvPlayer.Controls.VideoControl" Focusable="True" 
+             FileName="{Binding FileName, Mode=OneWay}">
 
+    <Interaction.Behaviors>
+        <EventTriggerBehavior EventName="PointerMoved">
+            <InvokeCommandAction Command="{Binding PointerMoved}" 
+                                 CommandParameter="{Binding $self}"/>
+        </EventTriggerBehavior>
+        <!-- <EventTriggerBehavior EventName="Unloaded"> -->
+        <!--     <InvokeCommandAction Command="{Binding Unloaded}"/> -->
+        <!--     <CallMethodAction MethodName="Unloaded"></CallMethodAction> -->
+        <!-- </EventTriggerBehavior> -->
+        <EventTriggerBehavior EventName="Unloaded">
+            <!-- <InvokeCommandAction Command="{Binding Unloaded}"></InvokeCommandAction> -->
+            <!-- <CallMethodAction MethodName="Unloaded" TargetObject="{Binding $parent[UserControl].DataContext}"></CallMethodAction> -->
+        </EventTriggerBehavior>
+    </Interaction.Behaviors>
     <UserControl.KeyBindings>
         <KeyBinding Gesture="Escape" Command="{Binding ExitFullScreen}"/>
-        <KeyBinding Gesture="Space" Command="{Binding SwitchState}"/>
+        <KeyBinding Gesture="Space" Command="{Binding SwitchPause}"/>
     </UserControl.KeyBindings>
     <Design.DataContext>
         <models:VideoControlModel />
@@ -19,22 +34,18 @@
     <UserControl.Resources>
         <ContextMenu x:Key="TopLevelMenu">
             <MenuItem Header="打开">
-                <MenuItem Header="打开文件" Command="{Binding OpenLocalFileVideo}"/>
+                <MenuItem Header="打开文件" 
+                          Command="{Binding OpenLocalFileVideo}" />
             </MenuItem>
             <MenuItem Header="全屏" Command="{Binding SwitchFullScreen}">
                 <MenuItem.Icon>
                     <local:CheckBox IsChecked="{Binding FullScreen}"></local:CheckBox>
                 </MenuItem.Icon>
             </MenuItem>
-            <MenuItem Header="字幕" ItemsSource="{Binding SubtitleMenuItems}">
-                <!-- <MenuItem Header="添加字幕" Command="{Binding AddSubTitle}"></MenuItem> -->
-                <!-- <Separator></Separator> -->
-                <!-- <MenuItem Command="{Binding SelectSubtitle}" -->
-                <!--           CommandParameter="{Binding $self}"> -->
-                <!--     <MenuItem.Icon> -->
-                <!--         <local:CheckBox CheckedIcon="fa-solid fa-check" UnCheckedIcon=""></local:CheckBox> -->
-                <!--     </MenuItem.Icon> -->
-                <!-- </MenuItem> -->
+            <!-- <MenuItem Header="字幕" ItemsSource="{Binding SubtitleMenuItems}"> -->
+            <!-- -->
+            <!-- </MenuItem> -->
+            <MenuItem Header="字幕" ItemsSource="{Binding SubtitleItems}">
             </MenuItem>
             <MenuItem Header="控制"></MenuItem>
             <MenuItem Header="属性" IsEnabled="{Binding Active}"></MenuItem>
@@ -56,7 +67,7 @@
     </UserControl.Styles>
 
     <Grid RowDefinitions="*, Auto" ColumnDefinitions="*" ShowGridLines="False">
-        <Panel Grid.Row="0">
+        <Panel Grid.Row="0" Grid.Column="0">
             <local:OpenGlControl x:Name="MpvControl"
                                  ContextMenu="{StaticResource TopLevelMenu}"
                                  Handle="{Binding Handle}" />
@@ -68,16 +79,17 @@
                         Orientation="Vertical"
                         VerticalAlignment="Bottom">
 
-                <local:VideoControlBar Active="{Binding Active}"
-                                       FullScreen="{Binding FullScreen}"
-                                       Pause="{Binding Pause}"
-                                       Volume="{Binding VolumeValue}"
-                                       Position="{Binding VideoValue}"
-                                       Duration="{Binding VideoDuration}"
-                                       Mute="{Binding Mute}">
+                <local:VideoControlBar
+                    Active="{Binding Active}"
+                    FullScreen="{Binding FullScreen}"
+                    Pause="{Binding Pause}"
+                    Volume="{Binding VolumeValue}"
+                    Position="{Binding VideoValue}"
+                    Duration="{Binding VideoDuration}"
+                    Mute="{Binding Mute}">
                     <Interaction.Behaviors>
                         <EventTriggerBehavior EventName="PauseClick">
-                            <InvokeCommandAction Command="{Binding SwitchState}"></InvokeCommandAction>
+                            <InvokeCommandAction Command="{Binding SwitchPause}"/>
                         </EventTriggerBehavior>
                         <EventTriggerBehavior EventName="VolumeClick">
                             <InvokeCommandAction Command="{Binding SwitchMute}"></InvokeCommandAction>
@@ -91,73 +103,23 @@
                     </Interaction.Behaviors>
                 </local:VideoControlBar>
                 
-                <!-- <Grid ColumnDefinitions="*" RowDefinitions="Auto, Auto" ShowGridLines="False" IsEnabled="{Binding ControlBarEnable}"> -->
-                <!--     <Grid Grid.Row="0" ColumnDefinitions="*, Auto, Auto" Margin="5" ShowGridLines="False"> -->
-                <!--         <Slider Margin="10, 0, 0,0" -->
-                <!--                 Value="{Binding VideoValue}" -->
-                <!--                 Maximum="{Binding VideoDuration}" -->
-                <!--                 Grid.Column="0" -->
-                <!--                 TickFrequency="1" -->
-                <!--                 IsSnapToTickEnabled="True" -->
-                <!--                 Orientation="Horizontal" /> -->
-                <!--         <icon:Icon Grid.Column="1" -->
-                <!--                    Classes="Volume" -->
-                <!--                    Margin="20, 0, 10, 0" -->
-                <!--                    Value="{Binding VolumeIcon}"> -->
-                <!--             <Interaction.Behaviors> -->
-                <!--                 <EventTriggerBehavior EventName="PointerPressed" SourceObject="{Binding $self}"> -->
-                <!--                     <InvokeCommandAction Command="{Binding SwitchMute}"></InvokeCommandAction> -->
-                <!--                 </EventTriggerBehavior> -->
-                <!--             </Interaction.Behaviors> -->
-                <!--         </icon:Icon> -->
-                <!--         <Slider MinWidth="80" -->
-                <!--                 Maximum="100" -->
-                <!--                 Margin="0, 0, 10,0" -->
-                <!--                 Value="{Binding VolumeValue}" -->
-                <!--                 Grid.Column="2" /> -->
-                <!--     </Grid> -->
-                <!--     <Grid Margin="5" Grid.Row="1" Grid.Column="0" ColumnDefinitions="Auto, Auto, Auto Auto, *, Auto, Auto" ShowGridLines="False"> -->
-                <!--         <Button Command="{Binding SwitchState}" -->
-                <!--                 Grid.Column="0" -->
-                <!--                 Margin="5, 0, 5, 0" -->
-                <!--                 icon:Attached.Icon="{Binding PauseIcon}"/> -->
-                <!--         <Button Command="{Binding Stop}" -->
-                <!--                 Margin="0, 0, 5, 0" -->
-                <!--                 Grid.Column="1" -->
-                <!--                 icon:Attached.Icon="fa-solid fa-stop"/> -->
-                <!--         <Button Grid.Column="2" -->
-                <!--                 Margin="0, 0, 0, 0" -->
-                <!--                 icon:Attached.Icon="{Binding FullScreenText}" -->
-                <!--                 Command="{Binding SwitchFullScreen}"/> -->
-                <!--         <TextBlock Grid.Column="3" -->
-                <!--                    FontSize="20" -->
-                <!--                    VerticalAlignment="Center" -->
-                <!--                    HorizontalAlignment="Center" -->
-                <!--                    Margin="20, 0" -->
-                <!--                    Text="{Binding ProgressText}"/> -->
-                <!--         <ContentControl Grid.Column="4"/> -->
-                <!--         <Button Grid.Column="5" -->
-                <!--                 Margin="0, 0, 5, 0" -->
-                <!--                 Command="{Binding Screenshot}" -->
-                <!--                 icon:Attached.Icon="fa-solid fa-scissors"/> -->
-                <!--         <Button Grid.Column="6" icon:Attached.Icon="fa-solid fa-gear"/> -->
-                <!--     </Grid> -->
-                <!-- </Grid> -->
             </StackPanel>
         </Panel>
-            
-        <local:VideoControlBar Grid.Row="1"
-                               IsVisible="{Binding !FullScreen}"
-                               Active="{Binding Active}"
-                               FullScreen="{Binding FullScreen}"
-                               Pause="{Binding Pause}"
-                               Volume="{Binding VolumeValue}"
-                               Position="{Binding VideoValue}"
-                               Duration="{Binding VideoDuration}"
-                               Mute="{Binding Mute}">
+
+        <local:VideoControlBar
+            Grid.Row="1"
+            Grid.Column="0"
+            IsVisible="{Binding !FullScreen}"
+            Active="{Binding Active}"
+            FullScreen="{Binding FullScreen}"
+            Pause="{Binding Pause}"
+            Volume="{Binding VolumeValue}"
+            Position="{Binding VideoValue}"
+            Duration="{Binding VideoDuration}"
+            Mute="{Binding Mute}">
             <Interaction.Behaviors>
                 <EventTriggerBehavior EventName="PauseClick">
-                    <InvokeCommandAction Command="{Binding SwitchState}"></InvokeCommandAction>
+                    <InvokeCommandAction Command="{Binding SwitchPause}"/>
                 </EventTriggerBehavior>
                 <EventTriggerBehavior EventName="VolumeClick">
                     <InvokeCommandAction Command="{Binding SwitchMute}"></InvokeCommandAction>
@@ -168,66 +130,14 @@
                 <EventTriggerBehavior EventName="FullScreenClick">
                     <InvokeCommandAction Command="{Binding SwitchFullScreen}"></InvokeCommandAction>
                 </EventTriggerBehavior>
+                <EventTriggerBehavior EventName="ScreenShotClick">
+                    <InvokeCommandAction Command="{Binding Screenshot}" 
+                                         CommandParameter="{Binding $parent[local:VideoControl]}"/>
+                </EventTriggerBehavior>
             </Interaction.Behaviors>
         </local:VideoControlBar>
-            
-    <!--     <Grid Focusable="False" -->
-    <!--           IsVisible="{Binding !FullScreen}" -->
-    <!--           Grid.Row="1" -->
-    <!--           ColumnDefinitions="*" -->
-    <!--           RowDefinitions="Auto, Auto" -->
-    <!--           ShowGridLines="False"> -->
-    <!--         <Grid Grid.Row="0" ColumnDefinitions="*, Auto, Auto" Margin="5" ShowGridLines="False"> -->
-    <!--             <Slider Margin="10, 0, 0,0" -->
-    <!--                     IsEnabled="{Binding Active}" -->
-    <!--                     Maximum="{Binding VideoDuration}" -->
-    <!--                     Value="{Binding VideoValue}" -->
-    <!--                     Grid.Column="0" -->
-    <!--                     TickFrequency="1" -->
-    <!--                     IsSnapToTickEnabled="True" -->
-    <!--                     Orientation="Horizontal"/> -->
-    <!--             <icon:Icon Classes="Volume" Grid.Column="1" -->
-    <!--                        Margin="20, 0, 10, 0" -->
-    <!--                        Value="{Binding VolumeIcon}"> -->
-    <!--                 <Interaction.Behaviors> -->
-    <!--                     <EventTriggerBehavior EventName="PointerPressed" SourceObject="{Binding $self}"> -->
-    <!--                         <InvokeCommandAction Command="{Binding SwitchMute}"></InvokeCommandAction> -->
-    <!--                     </EventTriggerBehavior> -->
-    <!--                 </Interaction.Behaviors> -->
-    <!--             </icon:Icon> -->
-    <!--             <Slider MinWidth="80" -->
-    <!--                     Maximum="100" -->
-    <!--                     Margin="0, 0, 10,0" -->
-    <!--                     Value="{Binding VolumeValue}" -->
-    <!--                     Grid.Column="2"/> -->
-    <!--         </Grid> -->
-    <!--      -->
-    <!--         <Grid Margin="5" Grid.Row="1" Grid.Column="0" ColumnDefinitions="Auto, Auto, Auto Auto, *, Auto, Auto" ShowGridLines="False"> -->
-    <!--             <Button Command="{Binding SwitchState}" -->
-    <!--                     Grid.Column="0" -->
-    <!--                     Margin="5, 0, 5, 0" -->
-    <!--                     icon:Attached.Icon="{Binding PauseIcon}"/> -->
-    <!--             <Button Command="{Binding Stop}" -->
-    <!--                     Margin="0, 0, 5, 0" -->
-    <!--                     Grid.Column="1" -->
-    <!--                     icon:Attached.Icon="fa-solid fa-stop"/> -->
-    <!--             <Button Grid.Column="2" -->
-    <!--                     Margin="0, 0, 0, 0" -->
-    <!--                     icon:Attached.Icon="{Binding FullScreenText}" -->
-    <!--                     Command="{Binding SwitchFullScreen}"/> -->
-    <!--             <TextBlock Grid.Column="3" -->
-    <!--                        FontSize="20" -->
-    <!--                        VerticalAlignment="Center" -->
-    <!--                        HorizontalAlignment="Center" -->
-    <!--                        Margin="20, 0" -->
-    <!--                        Text="{Binding ProgressText}"/> -->
-    <!--             <ContentControl Grid.Column="4"/> -->
-    <!--             <Button Grid.Column="5" -->
-    <!--                     Margin="0, 0, 5, 0" -->
-    <!--                     Command="{Binding Screenshot}" -->
-    <!--                     icon:Attached.Icon="fa-solid fa-scissors"/> -->
-    <!--             <Button Grid.Column="6" icon:Attached.Icon="fa-solid fa-gear"/> -->
-    <!--         </Grid> -->
-    <!--     </Grid> -->
+        <!-- <ListBox IsVisible="False" ItemsSource="{Binding PlayList}" Grid.Row="0" Grid.Column="1"> -->
+        <!-- -->
+        <!-- </ListBox> -->
     </Grid>
 </UserControl>

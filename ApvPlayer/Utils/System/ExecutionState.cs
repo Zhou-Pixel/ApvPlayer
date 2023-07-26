@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ApvPlayer.Utils;
+namespace ApvPlayer.Utils.System;
 
 [Flags]
 public enum ExecutionState : uint

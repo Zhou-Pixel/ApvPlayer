@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace ApvPlayer.Utils;
+namespace ApvPlayer.Utils.System;
 
 public class WindowsSystemSetting : ISystemSetting
 {

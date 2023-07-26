@@ -1,5 +1,4 @@
 ﻿using System;
-using ApvPlayer.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -144,10 +143,6 @@ public partial class VideoControlBar : UserControl
     
     public event Action<object?, RoutedEventArgs>? ScreenShotClick;
     
-
-    static VideoControlBar()
-    {
-    }
     
     public VideoControlBar()
     {
@@ -197,7 +192,7 @@ public partial class VideoControlBar : UserControl
         return min switch
         {
             0 => $"00:00:{valueInt:d2}",
-            > 0 and < 60 => $"00:{min:d2}:{(min % 60):d2}",
+            > 0 and < 60 => $"00:{min:d2}:{(valueInt % 60):d2}",
             _ => $"{(min / 60):d2}:{(min % 60):d2}:{(valueInt % 60):d2}"
         };
     }
